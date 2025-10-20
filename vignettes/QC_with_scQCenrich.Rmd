@@ -1,0 +1,68 @@
+---
+title: "QC_with_scQCenrich"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{QC_with_scQCenrich}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Overview
+
+This vignette runs `run_qc_pipeline()` on Seurat objects shipped with the package under `inst/extdata/`.
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse=TRUE, comment="#>", message=TRUE, warning=TRUE, cache=FALSE)
+```
+
+```{r load-packages}
+library(scQCenrich)
+library(Seurat)
+```
+
+```{r load-data}
+std_path <- system.file("extdata","seurat_std_small.rds", package="scQCenrich")
+sp_path  <- system.file("extdata","seurat_sp_small.rds", package="scQCenrich")
+stopifnot(nzchar(std_path), file.exists(std_path))
+stopifnot(nzchar(sp_path),  file.exists(sp_path))
+seurat_std_small <- readRDS(std_path)
+seurat_sp_small  <- readRDS(sp_path)
+```
+
+
+
+## Run the pipeline (fast, minimal settings)
+
+```{r run-pipeline}
+res <- run_qc_pipeline(
+  obj       = seurat_std_small,
+  species   = "mouse",
+  assay     = "RNA",
+  method    = "gmm",
+  # external splicing objects:
+  spliced_obj     = seurat_sp_small,
+  spliced_assay   = "spliced",
+  spliced_layer   = "counts",
+  unspliced_obj   = seurat_sp_small,
+  unspliced_assay = "unspliced",
+  unspliced_layer = "counts",
+  report_html = TRUE,
+  report_file = "qc_outputs/qc_report.html",
+  debug = FALSE,
+  annot_method = "marker_score",
+  tissue = "Skin",
+  doublets = "none"
+)
+```
+
+### Inspect outputs
+
+```{r inspect-outputs}
+# Key metadata columns
+head( res$obj@meta.data[, c("auto_celltype","qc_status","is_doublet")], 10)
+
+# If report_html=TRUE, a report is written to:
+normalizePath("qc_outputs/qc_report.html", winslash = "/")
+```
+

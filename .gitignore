@@ -1,0 +1,13 @@
+.Rproj.user
+inst/doc
+/doc/
+/qc_outputs/
+/tests/testthat/qc_outputs/
+*.log
+*.txt
+/*.rds
+.Rhistory
+dev.R
+package_combined.txt
+/Meta/
+/benchmarking/

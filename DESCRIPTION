@@ -1,0 +1,63 @@
+Package: scQCenrich
+Title: scQCenrich: Stress-aware Quality Control for Single-Cell RNA-seq
+Version: 0.0.0.9000
+Authors@R: 
+    person("Yuanyuan", "Liu", , "18211007107@163.com", role = c("aut", "cre"))
+Description: Quality control, doublet handling, cell-type auto-annotation, optional spliced/unspliced metrics, rescue of coherent clusters, and a presentable HTML QC report for Seurat v5 objects.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Depends: R (>= 4.2)
+Imports:
+    Seurat (>= 5.0.0),
+    SeuratObject (>= 5.0.0),
+    Matrix,
+    methods,
+    stats,
+    ggplot2,
+    dplyr,
+    AnnotationDbi,
+    rlang,
+    readr,
+    openxlsx,
+    png,
+    reshape2,
+    dbscan
+Suggests:
+    sccca,
+    SingleR,
+    mclust (>= 6.1),
+    celldex,
+    SingleCellExperiment,
+    msigdbr,
+    clusterProfiler,
+    fgsea,
+    Azimuth,
+    patchwork,
+    ComplexHeatmap,
+    circlize,
+    RColorBrewer,
+    grid,
+    htmltools,
+    rmarkdown,
+    thematic,
+    gt,
+    DT,
+    DoubletFinder,
+    scDblFinder,
+    org.Hs.eg.db,
+    org.Mm.eg.db,
+    knitr,
+    pkgdown,
+    BiocGenerics,
+    withr,
+    testthat (>= 3.0.0),
+    forcats,
+    cluster,
+    stringr,
+    bslib,
+    SeuratData,
+    HGNChelper
+VignetteBuilder: knitr
+LazyData: true
