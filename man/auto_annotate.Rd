@@ -8,13 +8,12 @@ auto_annotate(
   obj,
   species = c("mouse", "human"),
   assay = "RNA",
-  prefer = c("sctype", "marker_score", "singleR", "label_transfer", "azimuth"),
+  prefer = c("sctype", "marker_score", "singleR", "label_transfer"),
   level = c("cluster", "cell"),
   marker_score_level = c("cluster", "cell"),
   custom_signatures = NULL,
   ref_seurat = NULL,
   ref_label_col = NULL,
-  azimuth_ref = NULL,
   unknown_min_genes = 2,
   unknown_min_margin = 0.01,
   unknown_min_top = 0.01,
@@ -49,8 +48,6 @@ auto_annotate(
 \item{ref_seurat}{Optional Seurat reference object (label transfer).}
 
 \item{ref_label_col}{Column in \code{ref_seurat@meta.data} with labels.}
-
-\item{azimuth_ref}{Optional Azimuth reference identifier.}
 
 \item{unknown_min_genes}{Integer; minimum genes to avoid "unknown".}
 

@@ -5,11 +5,12 @@
 
 <p align="center">
 
-<img src="man/figures/logo.png" alt="scQCenrich logo" width="180">
+<img src="man/figures/logo.png" alt="scQCenrich logo" width="500">
 </p>
 
 <!-- badges: start -->
 
+[![R-CMD-check](https://github.com/lemonlyy755/scQCenrich/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/lemonlyy755/scQCenrich/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 scQCenrich is an annotation-aware quality control framework for

@@ -1,5 +1,5 @@
 Package: scQCenrich
-Title: scQCenrich: Stress-aware Quality Control for Single-Cell RNA-seq
+Title: Multi-Metric Quality Control for Single-Cell RNA-Seq
 Version: 0.0.0.9000
 Authors@R: 
     person("Yuanyuan", "Liu", , "18211007107@163.com", role = c("aut", "cre"))
@@ -23,7 +23,7 @@ Imports:
     openxlsx,
     png,
     reshape2,
-    dbscan
+    dbscan,
 Suggests:
     sccca,
     SingleR,
@@ -33,7 +33,6 @@ Suggests:
     msigdbr,
     clusterProfiler,
     fgsea,
-    Azimuth,
     patchwork,
     ComplexHeatmap,
     circlize,
@@ -57,7 +56,8 @@ Suggests:
     cluster,
     stringr,
     bslib,
-    SeuratData,
     HGNChelper
+Remotes: 
+    chris-mcginnis-ucsf/DoubletFinder
 VignetteBuilder: knitr
 LazyData: true

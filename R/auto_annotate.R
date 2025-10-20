@@ -9,7 +9,6 @@
 #' @param custom_signatures Optional list/data.frame of custom markers.
 #' @param ref_seurat Optional Seurat reference object (label transfer).
 #' @param ref_label_col Column in `ref_seurat@meta.data` with labels.
-#' @param azimuth_ref Optional Azimuth reference identifier.
 #' @param unknown_min_genes Integer; minimum genes to avoid "unknown".
 #' @param unknown_min_margin Numeric; min score margin to call a label.
 #' @param unknown_min_top Integer; min top markers expressed to call a label.
@@ -28,13 +27,12 @@
 auto_annotate <- function(obj,
                           species = c("mouse", "human"),
                           assay   = "RNA",
-                          prefer  = c("sctype","marker_score","singleR","label_transfer","azimuth"),
+                          prefer  = c("sctype","marker_score","singleR","label_transfer"),
                           level   = c("cluster", "cell"),
                           marker_score_level = c("cluster", "cell"),
                           custom_signatures = NULL,
                           ref_seurat = NULL,
                           ref_label_col = NULL,
-                          azimuth_ref = NULL,
                           unknown_min_genes = 2,
                           unknown_min_margin = 0.01,
                           unknown_min_top = 0.01,
@@ -64,7 +62,7 @@ auto_annotate <- function(obj,
   .aa_log(core_dir, sprintf("cells=%d features=%d",
                             ncol(obj), nrow(Seurat::GetAssayData(obj, assay = assay, layer = "counts"))))
 
-  backends <- unique(c(prefer, setdiff(c("singleR","label_transfer","azimuth","marker_score"), prefer)))
+  backends <- unique(c(prefer, setdiff(c("singleR","label_transfer","marker_score","sctype"), prefer)))
   .dbg("auto_annotate(): backends (in order) = %s", paste(backends, collapse = " \u2192 "))
 
   # helper to write results -> meta.data + snippet + debug bundle
@@ -160,20 +158,6 @@ auto_annotate <- function(obj,
       .aa_log(dir, "[label_transfer] failed or empty; continuing")
     }
 
-    if (bk == "azimuth" && !is.null(azimuth_ref) && requireNamespace("Azimuth", quietly = TRUE)) {
-      dir <- .aa_dbg_dir("azimuth")
-      .aa_log(dir, "[azimuth] begin (ref=%s)", azimuth_ref)
-      res <- try(.annot_azimuth(obj, azimuth_ref), silent = FALSE)
-      if (!inherits(res, "try-error") && !is.null(res)) {
-        labs <- res; names(labs) <- names(res)
-        obj <- .write_res(obj, list(labels = labs, margin = setNames(rep(NA_real_, length(labs)), names(labs)),
-                                    cluster_labels = NULL, level = level),
-                          backend_name = "azimuth")
-        return(obj)
-      }
-      .aa_log(dir, "[azimuth] failed or empty; continuing")
-    }
-
     if (bk == "marker_score") {
       dir <- .aa_dbg_dir(if (identical(marker_method, "findmarkers")) "panglao_overlap" else "marker_score")
       .aa_log(dir, "[marker_score] begin (method=%s, level=%s)", marker_method, marker_score_level)
@@ -215,8 +199,6 @@ auto_annotate <- function(obj,
 }
 
 
-
-# ---------- helpers: SingleR / label transfer / Azimuth ----------
 
 .has_singleR <- function() {
   requireNamespace("SingleR", quietly = TRUE) &&
@@ -334,13 +316,6 @@ auto_annotate <- function(obj,
     dims = 1:30
   )
   p <- as.character(preds$predicted.id)
-  names(p) <- colnames(obj)
-  p
-}
-
-.annot_azimuth <- function(obj, azimuth_ref_slug) {
-  mapped <- Azimuth::RunAzimuth(obj, reference = azimuth_ref_slug)
-  p <- mapped$predicted.celltype.l2
   names(p) <- colnames(obj)
   p
 }
