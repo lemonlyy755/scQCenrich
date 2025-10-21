@@ -29,7 +29,7 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
 
-     steps:
+    steps:
       - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-pandoc@v2
@@ -40,18 +40,12 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Install hard deps (no Suggests)
-        shell: Rscript {0}
-        run: |
-          install.packages("pak", repos = "https://cloud.r-project.org")
-          pak::local_install_deps(dependencies = c("Depends","Imports","LinkingTo"))
-          install.packages("rcmdcheck", repos = "https://cloud.r-project.org")
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
 
       - uses: r-lib/actions/check-r-package@v2
         with:
-          args: 'c("--no-manual","--as-cran","--ignore-vignettes")'
-          build_args: 'c("--no-manual","--no-build-vignettes")'
           upload-snapshots: true
-        env:
-          _R_CHECK_FORCE_SUGGESTS_: "false"
-
+          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
