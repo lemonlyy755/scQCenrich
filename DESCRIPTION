@@ -15,7 +15,7 @@ Imports:
     Matrix,
     methods,
     stats,
-    ggplot2,
+    ggplot2 (>= 4.0.0),
     dplyr,
     AnnotationDbi,
     rlang,
@@ -28,11 +28,11 @@ Suggests:
     sccca,
     SingleR,
     mclust (>= 6.1),
+    ggtree (>= 3.99.0),
     celldex,
     SingleCellExperiment,
     msigdbr,
     clusterProfiler,
-    ggtree (>= 3.99.0),
     fgsea,
     patchwork,
     ComplexHeatmap,
@@ -60,5 +60,8 @@ Suggests:
     HGNChelper
 Remotes: 
     chris-mcginnis-ucsf/DoubletFinder
+    github::YuLab-SMU/ggtree
 VignetteBuilder: knitr
 LazyData: true
+Config/Needs/check: |
+    github::YuLab-SMU/ggtree
