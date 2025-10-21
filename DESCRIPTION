@@ -15,7 +15,7 @@ Imports:
     Matrix,
     methods,
     stats,
-    ggplot2,
+    ggplot2 (>= 3.4.0),
     dplyr,
     AnnotationDbi,
     rlang,

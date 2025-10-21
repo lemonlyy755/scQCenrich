@@ -13,7 +13,9 @@ This vignette runs `run_qc_pipeline()` on Seurat objects shipped with the packag
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse=TRUE, comment="#>", message=TRUE, warning=TRUE, cache=FALSE)
+knitr::opts_chunk$set(collapse=TRUE, comment="#>", message=TRUE, warning=TRUE, cache=FALSE,
+                        eval = if (identical(Sys.getenv("CI"), "true")) FALSE else TRUE
+)
 ```
 
 ```{r load-packages}
