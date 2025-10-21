@@ -59,7 +59,7 @@ Suggests:
     bslib,
     HGNChelper
 Remotes: 
-    chris-mcginnis-ucsf/DoubletFinder
+    chris-mcginnis-ucsf/DoubletFinder,
     github::YuLab-SMU/ggtree
 VignetteBuilder: knitr
 LazyData: true
