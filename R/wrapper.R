@@ -1,8 +1,3 @@
-
-
-
-
-
 #' High-level wrapper that computes QC metrics, flags low-quality cells,
 #' (optionally) detects doublets and performs lightweight annotation, and
 #' renders an HTML report.

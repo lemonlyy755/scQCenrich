@@ -24,10 +24,12 @@ You can install the development version of scQCenrich from
 [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("remotes")  # or: install.packages("devtools")
-remotes::install_github("lemonlyy755/scQCenrich")
-# install.packages("pak")
-pak::pak("lemonlyy755/scQCenrich")
+install.packages("BiocManager")
+remotes::install_github(
+  "lemonlyy755/scQCenrich",
+  dependencies = TRUE,
+  repos = BiocManager::repositories()
+)
 ```
 
 ## Example
