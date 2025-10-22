@@ -40,8 +40,6 @@ seurat_sp_small  <- readRDS(sp_path)
 res <- run_qc_pipeline(
   obj       = seurat_std_small,
   species   = "mouse",
-  assay     = "RNA",
-  method    = "gmm",
   # external splicing objects:
   spliced_obj     = seurat_sp_small,
   spliced_assay   = "spliced",
@@ -51,11 +49,7 @@ res <- run_qc_pipeline(
   unspliced_layer = "counts",
   report_html = TRUE,
   report_file = "qc_outputs/qc_report.html",
-  debug = FALSE,
-  annot_method = "marker_score",
-  tissue = "Skin",
-  doublets = "none"
-)
+  tissue = "Skin")
 ```
 
 ### Inspect outputs

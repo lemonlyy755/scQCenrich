@@ -30,6 +30,19 @@ remotes::install_github(
   dependencies = TRUE,
   repos = BiocManager::repositories()
 )
+
+vignettes:
+install.packages(c("knitr","rmarkdown"))     
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+
+remotes::install_github(
+  "lemonlyy755/scQCenrich",
+  dependencies   = TRUE,
+  build_vignettes = TRUE,
+  repos          = BiocManager::repositories()
+)
+browseVignettes("scQCenrich")
+
 ```
 
 ## Example

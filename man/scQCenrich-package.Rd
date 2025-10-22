@@ -13,7 +13,6 @@ and (optionally) spliced/unspliced metrics (intronic_frac, unspliced/spliced fra
 \item Rescue of coherent, non-extreme flagged cells (3-tier keep/borderline/drop).
 \item Doublet detection (DoubletFinder / scDblFinder).
 \item Automatic cell-type annotation
-\item Optional clustering auto-tuning to preserve small clusters (k.param & resolution).
 \item Presentable HTML report (QC×label, removed-cell UMAP, enrichment).
 }
 }
