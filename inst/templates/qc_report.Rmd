@@ -15,10 +15,14 @@ output:
 
 ```{r report-setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo    = FALSE,
-  message = FALSE,
-  warning = FALSE,
-  comment = NA     # ← removes the "## " prefix on outputs
+  echo       = FALSE,
+  message    = FALSE,
+  warning    = FALSE,
+  comment    = NA,
+  fig.width  = 10,
+  fig.height = 8,
+  out.width  = "100%",
+  fig.retina = 2
 )
 
 # Objects provided by render_qc_report() via environment:
@@ -52,6 +56,37 @@ suppressPackageStartupMessages({
 })
 
 ```
+
+<style>
+/* Make images look nice with soft shadow and rounded corners */
+img {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+/* Style summary details toggle like a button */
+details summary {
+  cursor: pointer;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+details[open] summary {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0;
+}
+details > div {
+  border: 1px solid #ddd;
+  border-top: none;
+  padding: 15px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+</style>
 
 > **Overview**
 
@@ -172,7 +207,7 @@ if (file.exists(annot_png)) knitr::include_graphics(annot_png) else {
 
 ### Doublets
 
-```{r doublets, fig.width=7, fig.height=6}
+```{r doublets, fig.width=7, fig.height=6, results='asis'}
 dbl_umap <- file.path(save_dir, "qc_umap_doublet.png")
 dbl_bar1 <- file.path(save_dir, "qc_doublet_rate_by_group.png")
 
@@ -187,9 +222,13 @@ if ("dbl_score" %in% colnames(md)) {
   show$cell <- rownames(md)
   show <- head(show[order(show$dbl_score, decreasing = TRUE), ], 2000)
   if (requireNamespace("DT", quietly = TRUE)) {
-    DT::datatable(show, options = list(pageLength = 25, scrollX = TRUE))
+    cat("<details><summary>View Top Doublets Data</summary><div>\n")
+    print(htmltools::tagList(DT::datatable(show, options = list(pageLength = 25, scrollX = TRUE))))
+    cat("</div></details>\n")
   } else {
-    knitr::kable(show, format = "html")
+    cat("<details><summary>View Top Doublets Data</summary><div>\n")
+    print(knitr::kable(show, format = "html"))
+    cat("</div></details>\n")
   }
 } else {
   cat("> No doublet score available (pANN/scDblFinder.score).\n")
@@ -410,16 +449,20 @@ print(p1); print(p2); print(p3)
 
 ### Removed cells (top 2,000 rows)
 
-```{r removed}
+```{r removed, results='asis'}
 removed_cells <- subset(obj@meta.data, qc_status == "remove")
 removed_cells$cell <- rownames(removed_cells)
 show_tbl <- head(removed_cells, 2000)
 if (nrow(show_tbl) == 0) {
   cat("> No cells were removed.\n")
 } else if (requireNamespace("DT", quietly = TRUE)) {
-  DT::datatable(show_tbl, options = list(pageLength = 25, scrollX = TRUE))
+  cat("<details><summary>View Removed Cells Data</summary><div>\n")
+  print(htmltools::tagList(DT::datatable(show_tbl, options = list(pageLength = 25, scrollX = TRUE))))
+  cat("</div></details>\n")
 } else {
-  knitr::kable(show_tbl, format = "html")
+  cat("<details><summary>View Removed Cells Data</summary><div>\n")
+  print(knitr::kable(show_tbl, format = "html"))
+  cat("</div></details>\n")
 }
 ```
 
