@@ -1,7 +1,7 @@
 # ---- R/utils.R ----
 # Utilities + robust Seurat v5 layer handling and debugging
 
-`%||%` <- function(x, y) if (is.null(x)) y else x  # small local helper
+`%||%` <- function(x, y) if (is.null(x)) y else x # small local helper
 
 .dbg <- function(...) {
   if (isTRUE(getOption("scQCenrich.debug", FALSE))) {
@@ -10,7 +10,7 @@
 }
 
 .mad_thresholds <- function(x, k = 3) {
-  m  <- stats::median(x, na.rm = TRUE)
+  m <- stats::median(x, na.rm = TRUE)
   md <- stats::mad(x, constant = 1, na.rm = TRUE)
   list(
     high = m + k * md,
@@ -25,20 +25,18 @@
     .dbg(name, ": already dgCMatrix (", paste(dim(x), collapse = "x"), ")")
     return(x)
   }
-  out <- suppressWarnings(try(methods::as(x, "dgCMatrix"), silent = TRUE)
-  )
-  if (!inherits(out, "try-error") && inherits(out, "dgCMatrix"))
-  {
-    .dbg(name,
-         ": coerced via methods::as -> dgCMatrix (",
-         paste(dim(out), collapse = "x"),
-         ")")
+  out <- suppressWarnings(try(methods::as(x, "dgCMatrix"), silent = TRUE))
+  if (!inherits(out, "try-error") && inherits(out, "dgCMatrix")) {
+    .dbg(
+      name,
+      ": coerced via methods::as -> dgCMatrix (",
+      paste(dim(out), collapse = "x"),
+      ")"
+    )
     return(out)
   }
-  m <- suppressWarnings(try(as.matrix(x), silent = TRUE)
-  )
-  if (!inherits(m, "try-error") && is.matrix(m))
-  {
+  m <- suppressWarnings(try(as.matrix(x), silent = TRUE))
+  if (!inherits(m, "try-error") && is.matrix(m)) {
     out <- Matrix::Matrix(m, sparse = TRUE)
     out <- methods::as(out, "dgCMatrix")
     .dbg(
@@ -53,10 +51,12 @@
     m <- matrix(x, ncol = 1)
     out <- Matrix::Matrix(m, sparse = TRUE)
     out <- methods::as(out, "dgCMatrix")
-    .dbg(name,
-         ": vector->matrix -> dgCMatrix (",
-         paste(dim(out), collapse = "x"),
-         ")")
+    .dbg(
+      name,
+      ": vector->matrix -> dgCMatrix (",
+      paste(dim(out), collapse = "x"),
+      ")"
+    )
     return(out)
   }
   stop(
@@ -69,14 +69,17 @@
 }
 
 .parse_assay_layer <- function(x, default_layer = "counts") {
-  if (is.null(x))
+  if (is.null(x)) {
     return(list(assay = NULL, layer = NULL))
-  if (length(x) != 1L)
+  }
+  if (length(x) != 1L) {
     stop(".parse_assay_layer(): expecting a single string.")
+  }
   if (grepl(":", x, fixed = TRUE)) {
     parts <- strsplit(x, ":", fixed = TRUE)[[1]]
-    if (length(parts) != 2L)
+    if (length(parts) != 2L) {
       stop("Use 'assay:layer', e.g., 'RNA:unspliced'.")
+    }
     list(assay = parts[1], layer = parts[2])
   } else {
     list(assay = x, layer = default_layer)
@@ -98,7 +101,6 @@
   # 2) Try using assay object directly
   ao <- suppressWarnings(try(obj[[assay]], silent = TRUE))
   if (!inherits(ao, "try-error") && !is.null(ao)) {
-
     out <- suppressWarnings(
       try(SeuratObject::GetAssayData(ao, layer = layer_or_slot), silent = TRUE)
     )
@@ -137,39 +139,45 @@
     obj <- tryCatch(
       SeuratObject::JoinLayers(obj, assay = assay),
       error = function(e) {
-        if (!is.null(debug_dir))
-          writeLines(e$message,
-                     file.path(debug_dir, "joinlayers_error.txt"))
+        if (!is.null(debug_dir)) {
+          writeLines(
+            e$message,
+            file.path(debug_dir, "joinlayers_error.txt")
+          )
+        }
         obj
       }
     )
   }
   dat <- suppressWarnings(try(SeuratObject::GetAssayData(obj, assay = assay, layer = "data"),
-                              silent = TRUE)
-  )
+    silent = TRUE
+  ))
   if (inherits(dat, "try-error") ||
-      is.null(dat) || nrow(dat) == 0L || ncol(dat) == 0L)
-  {
+    is.null(dat) || nrow(dat) == 0L || ncol(dat) == 0L) {
     obj <- Seurat::NormalizeData(obj, verbose = FALSE)
   }
   if (!is.null(debug_dir)) {
     dir.create(debug_dir, FALSE, TRUE)
     info <- list(
-      R.version       = R.version.string,
-      Seurat          = as.character(utils::packageVersion("Seurat")),
-      SeuratObject    = as.character(utils::packageVersion("SeuratObject")),
-      assay           = assay,
+      R.version = R.version.string,
+      Seurat = as.character(utils::packageVersion("Seurat")),
+      SeuratObject = as.character(utils::packageVersion("SeuratObject")),
+      assay = assay,
       n_features_cnts = nrow(Seurat::GetAssayData(
-        obj, assay = assay, layer = "counts"
+        obj,
+        assay = assay, layer = "counts"
       )),
-      n_cells_cnts    = ncol(Seurat::GetAssayData(
-        obj, assay = assay, layer = "counts"
+      n_cells_cnts = ncol(Seurat::GetAssayData(
+        obj,
+        assay = assay, layer = "counts"
       )),
       n_features_data = nrow(Seurat::GetAssayData(
-        obj, assay = assay, layer = "data"
+        obj,
+        assay = assay, layer = "data"
       )),
-      n_cells_data    = ncol(Seurat::GetAssayData(
-        obj, assay = assay, layer = "data"
+      n_cells_data = ncol(Seurat::GetAssayData(
+        obj,
+        assay = assay, layer = "data"
       ))
     )
     write.csv(
@@ -220,29 +228,36 @@
                          width = 6.5,
                          height = 5,
                          dpi = 200) {
-  try({
-    if (!is.null(plot))
-      ggplot2::ggsave(path,
-                      plot,
-                      width = width,
-                      height = height,
-                      dpi = dpi)
-  }, silent = TRUE)
+  try(
+    {
+      if (!is.null(plot)) {
+        ggplot2::ggsave(path,
+          plot,
+          width = width,
+          height = height,
+          dpi = dpi
+        )
+      }
+    },
+    silent = TRUE
+  )
   invisible(path)
 }
 
 .guess_id_type <- function(genes) {
   g <- genes[!is.na(genes)]
-  frac_hs  <- mean(grepl("^ENSG\\d+(?:\\.\\d+)?$", g))
-  frac_mm  <- mean(grepl("^ENSMUSG\\d+(?:\\.\\d+)?$", g))
-  if (max(frac_hs, frac_mm, na.rm = TRUE) > 0.6)
+  frac_hs <- mean(grepl("^ENSG\\d+(?:\\.\\d+)?$", g))
+  frac_mm <- mean(grepl("^ENSMUSG\\d+(?:\\.\\d+)?$", g))
+  if (max(frac_hs, frac_mm, na.rm = TRUE) > 0.6) {
     "ENSEMBL"
-  else
+  } else {
     "SYMBOL"
+  }
 }
 
-.strip_ver <- function(x)
+.strip_ver <- function(x) {
   sub("\\.\\d+$", "", x)
+}
 
 #' @export
 # internal helper; DO NOT export (or keep your current export status)
@@ -251,16 +266,24 @@
 
   # Fast path for SYMBOL rownames: match MT- or mt.  (e.g., "MT-CO1")
   i <- grep("^mt[-\\.]", genes, ignore.case = TRUE)
-  if (length(i)) return(i)
+  if (length(i)) {
+    return(i)
+  }
 
   # Only attempt DB mapping if rownames *look* like Ensembl
   looks_ens <- any(grepl("^(ENSG\\d+|ENSMUSG\\d+)", genes))
-  if (!looks_ens) return(integer(0))
+  if (!looks_ens) {
+    return(integer(0))
+  }
 
   # Graceful fallbacks if DBs are missing (avoid errors in light tests)
-  if (!requireNamespace("AnnotationDbi", quietly = TRUE)) return(integer(0))
+  if (!requireNamespace("AnnotationDbi", quietly = TRUE)) {
+    return(integer(0))
+  }
   pkg <- if (species == "mouse") "org.Mm.eg.db" else "org.Hs.eg.db"
-  if (!requireNamespace(pkg, quietly = TRUE)) return(integer(0))
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    return(integer(0))
+  }
 
   # Get the OrgDb object from the namespace safely
   db <- getExportedValue(pkg, pkg)
@@ -274,7 +297,9 @@
       columns = "SYMBOL"
     )
   })
-  if (!NROW(map)) return(integer(0))
+  if (!NROW(map)) {
+    return(integer(0))
+  }
 
   sym <- setNames(map$SYMBOL, map$ENSEMBL)
   sym <- sym[match(genes, names(sym))]
@@ -285,7 +310,7 @@
 # canonicalize common barcode variants
 .norm_cell_id <- function(x) {
   x <- as.character(x)
-  x <- sub("^.*:", "", x)                  # drop "sample:" prefix
+  x <- sub("^.*:", "", x) # drop "sample:" prefix
   x <- sub("[\\-_.:][0-9A-Za-z]+$", "", x) # drop -1/_1/:1/etc.
   x <- sub("x$", "", x, ignore.case = TRUE)
   x <- toupper(x)
@@ -302,7 +327,7 @@
   # map base keys to FIRST unique external index; ambiguous external keys become NA
   ext_tab <- table(ekey)
   amb_ext <- names(ext_tab)[ext_tab > 1]
-  ext_first_idx <- match(ekey, ekey)  # first occurrence positions
+  ext_first_idx <- match(ekey, ekey) # first occurrence positions
   ext_map <- ext_first_idx
   names(ext_map) <- ekey
 
@@ -310,7 +335,7 @@
   # drop ambiguous
   m[!is.na(m) & ekey[m] %in% amb_ext] <- NA_integer_
 
-  n_matched   <- sum(!is.na(m))
+  n_matched <- sum(!is.na(m))
   n_ambiguous <- sum(!is.na(match(bkey, amb_ext)))
   n_unmatched <- length(base_cells) - n_matched
 
@@ -336,15 +361,17 @@
 }
 
 
-
-.dbg_file <- function()
+.dbg_file <- function() {
   getOption("scQCenrich.debug_file", "qc_outputs/sctype_debug.log")
+}
 .dbg <- function(fmt, ...) {
-  if (!isTRUE(getOption("scQCenrich.debug", FALSE)))
+  if (!isTRUE(getOption("scQCenrich.debug", FALSE))) {
     return(invisible())
+  }
   dir.create(dirname(.dbg_file()),
-             showWarnings = FALSE,
-             recursive = TRUE)
+    showWarnings = FALSE,
+    recursive = TRUE
+  )
   msg <- sprintf("[%s] %s\n", format(Sys.time(), "%F %T"), sprintf(fmt, ...))
   cat(msg, file = .dbg_file(), append = TRUE)
 }
@@ -415,7 +442,7 @@
     write.csv(
       data.frame(
         new_col = paste0(sub("_*$", "_", name), clean),
-        sig     = names(features),
+        sig = names(features),
         n_genes = vapply(features, length, 1L),
         stringsAsFactors = FALSE,
         check.names = FALSE
@@ -426,7 +453,6 @@
   }
   list(obj = obj, cols = paste0(sub("_*$", "_", name), clean))
 }
-
 
 
 .trace_start <- function(stage, root = file.path("qc_outputs", paste0("debug_", format(Sys.time(), "%Y%m%d-%H%M%S")))) {
@@ -448,10 +474,11 @@
   )
 }
 .trace_save <- function(tr, x, name) {
-  p <- file.path(tr$dir, paste0(name, if (grepl("\\.rds$", name, TRUE))
+  p <- file.path(tr$dir, paste0(name, if (grepl("\\.rds$", name, TRUE)) {
     ""
-    else
-      ".rds"))
+  } else {
+    ".rds"
+  }))
   saveRDS(x, p)
   invisible(p)
 }
@@ -463,9 +490,11 @@
   )
 }
 
-.say <- function(...)
-  if (isTRUE(getOption("scQCenrich.debug")))
+.say <- function(...) {
+  if (isTRUE(getOption("scQCenrich.debug"))) {
     message(sprintf(...))
+  }
+}
 
 .top2 <- function(v) {
   o <- sort(v, decreasing = TRUE)
@@ -474,13 +503,19 @@
 
 .scq_dbg <- function(...) if (isTRUE(getOption("scQCenrich.debug", FALSE))) message(sprintf(...))
 
-scq_finite <- function(x) { x[is.finite(x)] }
+scq_finite <- function(x) {
+  x[is.finite(x)]
+}
 
 scq_safe_range <- function(x, pad = 0.04, fallback = c(0, 1)) {
   x <- scq_finite(x)
-  if (!length(x)) return(fallback)
+  if (!length(x)) {
+    return(fallback)
+  }
   r <- range(x)
-  if (!all(is.finite(r))) return(fallback)
+  if (!all(is.finite(r))) {
+    return(fallback)
+  }
   if (r[1] == r[2]) {
     w <- if (r[1] == 0) 1 else abs(r[1]) * max(pad, 1e-6)
     r <- r + c(-w, w)
@@ -490,16 +525,26 @@ scq_safe_range <- function(x, pad = 0.04, fallback = c(0, 1)) {
 
 # Validate a PNG; return TRUE/FALSE
 scq_is_valid_png <- function(path) {
-  if (!file.exists(path)) return(FALSE)
-  tryCatch({ png::readPNG(path); TRUE }, error = function(e) FALSE)
+  if (!file.exists(path)) {
+    return(FALSE)
+  }
+  tryCatch(
+    {
+      png::readPNG(path)
+      TRUE
+    },
+    error = function(e) FALSE
+  )
 }
 
 # Make a placeholder PNG explaining what failed
 scq_write_placeholder <- function(path, title = "Plot unavailable", subtitle = NULL) {
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
   grDevices::png(filename = path, width = 1200, height = 400, res = 150)
-  old <- par(mar = c(0, 0, 2, 0)); on.exit(par(old), add = TRUE)
-  plot.new(); title(main = title, cex.main = 1.1)
+  old <- par(mar = c(0, 0, 2, 0))
+  on.exit(par(old), add = TRUE)
+  plot.new()
+  title(main = title, cex.main = 1.1)
   if (!is.null(subtitle)) mtext(subtitle, side = 3, line = -1, cex = 0.9)
   grDevices::dev.off()
 }
@@ -507,11 +552,15 @@ scq_write_placeholder <- function(path, title = "Plot unavailable", subtitle = N
 # Run plotting code safely; always leave behind a valid PNG
 scq_png <- function(path, width = 1800, height = 1200, res = 200, expr) {
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-  ok <- TRUE; emsg <- NULL
+  ok <- TRUE
+  emsg <- NULL
   grDevices::png(filename = path, width = width, height = height, res = res)
   tryCatch(
     eval.parent(substitute(expr)),
-    error = function(e) { ok <<- FALSE; emsg <<- conditionMessage(e) }
+    error = function(e) {
+      ok <<- FALSE
+      emsg <<- conditionMessage(e)
+    }
   )
   grDevices::dev.off()
 
@@ -524,28 +573,36 @@ scq_png <- function(path, width = 1800, height = 1200, res = 200, expr) {
 # Debug helpers for vectors used as axes
 scq_dbg_vec <- function(x, label) {
   xf <- scq_finite(x)
-  .scq_dbg("[%s] N=%d finite=%d range=(%.4f, %.4f) unique=%d",
-           label, length(x), length(xf),
-           if (length(xf)) min(xf) else NaN,
-           if (length(xf)) max(xf) else NaN,
-           length(unique(xf)))
+  .scq_dbg(
+    "[%s] N=%d finite=%d range=(%.4f, %.4f) unique=%d",
+    label, length(x), length(xf),
+    if (length(xf)) min(xf) else NaN,
+    if (length(xf)) max(xf) else NaN,
+    length(unique(xf))
+  )
 }
-scq_inspect_names <- function(x, label="") {
-  .scq_dbg("[names:%s] class=%s typeof=%s length=%d anyNA=%s first=%s",
-           label, paste(class(x), collapse=","), typeof(x), length(x),
-           any(is.na(x)), paste(utils::head(as.character(x), 3L), collapse=", "))
+scq_inspect_names <- function(x, label = "") {
+  .scq_dbg(
+    "[names:%s] class=%s typeof=%s length=%d anyNA=%s first=%s",
+    label, paste(class(x), collapse = ","), typeof(x), length(x),
+    any(is.na(x)), paste(utils::head(as.character(x), 3L), collapse = ", ")
+  )
 }
 
-scq_make_unique <- function(x, label="") {
-  if (is.null(x)) return(NULL)
+scq_make_unique <- function(x, label = "") {
+  if (is.null(x)) {
+    return(NULL)
+  }
   scq_inspect_names(x, paste0(label, ":raw"))
   if (!is.character(x)) {
-    .scq_dbg("[names:%s] coercing to character from class=%s typeof=%s",
-             label, paste(class(x), collapse=","), typeof(x))
+    .scq_dbg(
+      "[names:%s] coercing to character from class=%s typeof=%s",
+      label, paste(class(x), collapse = ","), typeof(x)
+    )
     x <- as.character(x)
   }
   x[is.na(x)] <- "NA"
-  x[x == ""]  <- "unnamed"
+  x[x == ""] <- "unnamed"
   # defensively drop attributes that sometimes sneak in (e.g., AsIs/levels)
   attributes(x) <- attributes(x)[intersect(names(attributes(x)), c("names"))]
   x <- base::make.unique(x)
