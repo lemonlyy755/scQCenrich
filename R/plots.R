@@ -1,22 +1,26 @@
 # ---- plots.R ----
+utils::globalVariables(c("UMAP_1", "UMAP_2", "qc_status", "is_doublet", "group", "rate", "val"))
+
 qc_diagnostic_panel <- function(
-    obj, metrics, status_df,
-    assay = DefaultAssay(obj),
-    save_dir = "qc_outputs",
-    prefix = "qc",
-    sample_col = NULL,
-    group_col = "auto_celltype"  # NEW: functional grouping for bars
-){
-  if (!dir.exists(save_dir)) dir.create(save_dir, recursive = TRUE, showWarnings = FALSE)
+  obj, metrics, status_df,
+  assay = DefaultAssay(obj),
+  save_dir = "qc_outputs",
+  prefix = "qc",
+  sample_col = NULL,
+  group_col = "auto_celltype" # NEW: functional grouping for bars
+) {
+  if (!dir.exists(save_dir)) dir.create(save_dir, recursive = TRUE, showWarnings = FALSE) # nolint
   obj <- .ensure_pca_umap(obj, assay = assay, npcs = 20)
 
   # --- 1) UMAP by QC status ---
   umap_df <- .make_umap_df(obj, color_col = "qc_status")
   p_qc <- ggplot2::ggplot(umap_df, ggplot2::aes(UMAP_1, UMAP_2, color = qc_status)) +
-    ggplot2::geom_point(size = 0.3, alpha = 0.6) + ggplot2::theme_classic() +
+    ggplot2::geom_point(size = 0.3, alpha = 0.6) +
+    ggplot2::theme_classic() +
     ggplot2::labs(title = "UMAP (colored by QC status)") +
     ggplot2::guides(color = ggplot2::guide_legend(override.aes = list(size = 3, alpha = 1)))
-  f_qc <- file.path(save_dir, sprintf("%s_umap_qc.png", prefix)); .gg_save_safe(p_qc, f_qc, 6, 5, 200)
+  f_qc <- file.path(save_dir, sprintf("%s_umap_qc.png", prefix))
+  .gg_save_safe(p_qc, f_qc, 6, 5, 200)
 
   # --- 1b) UMAP by annotation (if present) ---
   annot_col <- if (!is.null(group_col) && group_col %in% colnames(obj@meta.data)) group_col else NULL
@@ -24,20 +28,26 @@ qc_diagnostic_panel <- function(
   if (!is.null(annot_col)) {
     ua <- .make_umap_df(obj, color_col = annot_col)
     p_annot <- ggplot2::ggplot(ua, ggplot2::aes(UMAP_1, UMAP_2, color = .data[[annot_col]])) +
-      ggplot2::geom_point(size = 0.3, alpha = 0.6) + ggplot2::theme_classic() +
+      ggplot2::geom_point(size = 0.3, alpha = 0.6) +
+      ggplot2::theme_classic() +
       ggplot2::labs(title = paste0("UMAP (", annot_col, ")"), color = annot_col) +
       ggplot2::guides(color = ggplot2::guide_legend(override.aes = list(size = 3, alpha = 1)))
-    f_annot <- file.path(save_dir, sprintf("%s_umap_annotation.png", prefix)); .gg_save_safe(p_annot, f_annot, 7, 5, 200)
+    f_annot <- file.path(save_dir, sprintf("%s_umap_annotation.png", prefix))
+    .gg_save_safe(p_annot, f_annot, 7, 5, 200)
   }
 
   # --- 2) UMAP by doublet ---
-  md <- obj@meta.data; md$cell <- rownames(md)
-  dd <- .make_umap_df(obj); dd$is_doublet <- md[rownames(dd), "is_doublet", drop = TRUE]
+  md <- obj@meta.data
+  md$cell <- rownames(md)
+  dd <- .make_umap_df(obj)
+  dd$is_doublet <- md[rownames(dd), "is_doublet", drop = TRUE]
   p_dbl <- ggplot2::ggplot(dd, ggplot2::aes(UMAP_1, UMAP_2, color = is_doublet)) +
-    ggplot2::geom_point(size = 0.3, alpha = 0.6) + ggplot2::theme_classic() +
-    ggplot2::scale_color_manual(values = c("FALSE"="#A0A0A0","TRUE"="#E74C3C"), na.translate = TRUE) +
+    ggplot2::geom_point(size = 0.3, alpha = 0.6) +
+    ggplot2::theme_classic() +
+    ggplot2::scale_color_manual(values = c("FALSE" = "#A0A0A0", "TRUE" = "#E74C3C"), na.translate = TRUE) +
     ggplot2::labs(title = "UMAP (predicted doublets)")
-  f_dbl <- file.path(save_dir, sprintf("%s_umap_doublet.png", prefix)); .gg_save_safe(p_dbl, f_dbl, 6, 5, 200)
+  f_dbl <- file.path(save_dir, sprintf("%s_umap_doublet.png", prefix))
+  .gg_save_safe(p_dbl, f_dbl, 6, 5, 200)
 
   # --- 3) Doublet rate bar chart by functional group (robust) ---
   md <- obj@meta.data
@@ -49,7 +59,7 @@ qc_diagnostic_panel <- function(
     if (is.numeric(is_dbl)) {
       is_dbl <- is_dbl > 0
     } else {
-      is_dbl <- tolower(as.character(is_dbl)) %in% c("true","t","1","yes")
+      is_dbl <- tolower(as.character(is_dbl)) %in% c("true", "t", "1", "yes")
     }
   }
   md$.__is_doublet__ <- is_dbl
@@ -64,17 +74,21 @@ qc_diagnostic_panel <- function(
 
   if (is.na(gcol)) {
     rate <- mean(md$.__is_doublet__, na.rm = TRUE)
-    tab  <- data.frame(group = "All cells",
-                       rate  = ifelse(is.finite(rate), rate, NA_real_))
+    tab <- data.frame(
+      group = "All cells",
+      rate = ifelse(is.finite(rate), rate, NA_real_)
+    )
   } else {
     md$.__group__ <- md[[gcol]]
     md2 <- md[!is.na(md$.__group__), , drop = FALSE]
 
     if (nrow(md2)) {
       # use 'by=' form to avoid formula NSE headaches
-      tab <- aggregate(x  = list(rate = as.numeric(md2$.__is_doublet__)),
-                       by = list(group = as.character(md2$.__group__)),
-                       FUN = function(x) mean(x == 1, na.rm = TRUE))
+      tab <- aggregate(
+        x = list(rate = as.numeric(md2$.__is_doublet__)),
+        by = list(group = as.character(md2$.__group__)),
+        FUN = function(x) mean(x == 1, na.rm = TRUE)
+      )
     } else {
       tab <- data.frame(group = character(0), rate = numeric(0))
     }
@@ -82,18 +96,21 @@ qc_diagnostic_panel <- function(
     # Fallback if everything was NA
     if (!nrow(tab)) {
       rate <- mean(md$.__is_doublet__, na.rm = TRUE)
-      tab  <- data.frame(group = "All cells",
-                         rate  = ifelse(is.finite(rate), rate, NA_real_))
+      tab <- data.frame(
+        group = "All cells",
+        rate = ifelse(is.finite(rate), rate, NA_real_)
+      )
     }
   }
 
   tab <- tab[order(tab$rate, decreasing = TRUE), , drop = FALSE]
 
-  p_bar <- ggplot2::ggplot(tab, ggplot2::aes(x = group, y = 100*rate)) +
-    ggplot2::geom_col() + ggplot2::theme_classic() +
+  p_bar <- ggplot2::ggplot(tab, ggplot2::aes(x = group, y = 100 * rate)) +
+    ggplot2::geom_col() +
+    ggplot2::theme_classic() +
     ggplot2::ylab("% predicted doublets") +
     ggplot2::xlab(if (is.na(gcol)) NULL else gcol) +
-    ggplot2::coord_cartesian(ylim = c(0, max(5, 100*max(tab$rate, na.rm = TRUE)))) +
+    ggplot2::coord_cartesian(ylim = c(0, max(5, 100 * max(tab$rate, na.rm = TRUE)))) +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
   f_bar <- file.path(save_dir, sprintf("%s_doublet_rate_by_group.png", prefix))
   .gg_save_safe(p_bar, f_bar, 8.5, 4.5, 200)
@@ -102,8 +119,9 @@ qc_diagnostic_panel <- function(
 }
 
 
-.ensure_pca_umap <- function(obj, assay = DefaultAssay(obj), npcs = 20){
-  odef <- DefaultAssay(obj); on.exit(DefaultAssay(obj) <- odef, add = TRUE)
+.ensure_pca_umap <- function(obj, assay = DefaultAssay(obj), npcs = 20) {
+  odef <- DefaultAssay(obj)
+  on.exit(DefaultAssay(obj) <- odef, add = TRUE)
   DefaultAssay(obj) <- assay
 
   # If 'data' layer is empty, create it for diagnostics
@@ -117,27 +135,34 @@ qc_diagnostic_panel <- function(
     if (isTRUE(getOption("scQCenrich.debug"))) message("[scQCenrich-debug] FindVariableFeatures()/ScaleData()/RunPCA(): creating PCA. ")
     obj <- Seurat::FindVariableFeatures(obj, nfeatures = 2000, verbose = FALSE)
     obj <- Seurat::ScaleData(obj, verbose = FALSE)
-    obj <- Seurat::RunPCA(obj, npcs = npcs, verbose = FALSE)
+    pca_try <- try(Seurat::RunPCA(obj, npcs = npcs, verbose = FALSE), silent = TRUE)
+    if (inherits(pca_try, "try-error")) {
+      pca_try <- try(Seurat::RunPCA(obj, npcs = min(npcs, 5), approx = FALSE, verbose = FALSE), silent = TRUE)
+    }
+    if (!inherits(pca_try, "try-error")) obj <- pca_try
   }
-  if (!("umap" %in% names(obj@reductions)) || ncol(Seurat::Embeddings(obj, "umap")) < 2) {
-    if (isTRUE(getOption("scQCenrich.debug"))) message("[scQCenrich-debug] RunUMAP(): creating UMAP with 20 PCs. ")
-    nd <- min(npcs, ncol(Seurat::Embeddings(obj, "pca")))
-    obj <- Seurat::RunUMAP(
-      obj, reduction = "pca", dims = 1:nd, verbose = FALSE,
-      seed.use = .umap_seed()
-    )
-
+  if ("pca" %in% names(obj@reductions)) {
+    if (!("umap" %in% names(obj@reductions)) || ncol(Seurat::Embeddings(obj, "umap")) < 2) {
+      if (isTRUE(getOption("scQCenrich.debug"))) message("[scQCenrich-debug] RunUMAP(): creating UMAP with 20 PCs. ")
+      nd <- min(npcs, ncol(Seurat::Embeddings(obj, "pca")))
+      umap_try <- try(Seurat::RunUMAP(
+        obj,
+        reduction = "pca", dims = 1:nd, verbose = FALSE,
+        seed.use = .umap_seed()
+      ), silent = TRUE)
+      if (!inherits(umap_try, "try-error")) obj <- umap_try
+    }
   }
   obj
 }
 
-.make_umap_df <- function(obj, color_col = NULL){
+.make_umap_df <- function(obj, color_col = NULL) {
   emb <- Seurat::Embeddings(obj, "umap")
   stopifnot(ncol(emb) >= 2)
   df <- data.frame(
-    cell    = rownames(emb),
-    UMAP_1  = emb[, 1],
-    UMAP_2  = emb[, 2],
+    cell = rownames(emb),
+    UMAP_1 = emb[, 1],
+    UMAP_2 = emb[, 2],
     row.names = rownames(emb),
     check.names = FALSE
   )
@@ -163,7 +188,8 @@ qc_diagnostic_panel <- function(
 .winsorize <- function(x, q = c(0.02, 0.98)) {
   lo <- stats::quantile(x, q[1], na.rm = TRUE)
   hi <- stats::quantile(x, q[2], na.rm = TRUE)
-  x[x < lo] <- lo; x[x > hi] <- hi
+  x[x < lo] <- lo
+  x[x > hi] <- hi
   x
 }
 
@@ -183,21 +209,20 @@ qc_diagnostic_panel <- function(
       panel.background  = ggplot2::element_rect(fill = BG, colour = NA),
       legend.background = ggplot2::element_rect(fill = BG, colour = NA),
       legend.key        = ggplot2::element_rect(fill = BG, colour = NA),
-      legend.position   = "right",              # <-- per-plot legend on the right
-      legend.margin     = ggplot2::margin(2,2,2,2,"mm"),
-      legend.box.margin = ggplot2::margin(2,4,2,2,"mm"),
+      legend.position   = "right", # <-- per-plot legend on the right
+      legend.margin     = ggplot2::margin(2, 2, 2, 2, "mm"),
+      legend.box.margin = ggplot2::margin(2, 4, 2, 2, "mm"),
       plot.title        = ggplot2::element_text(hjust = 0.5, face = "bold"),
-      plot.margin       = ggplot2::margin(2,6,2,2,"mm")
+      plot.margin       = ggplot2::margin(2, 6, 2, 2, "mm")
     ) +
     ggplot2::labs(title = title, color = NULL) +
     ggplot2::scale_color_viridis_c() +
     ggplot2::guides(color = ggplot2::guide_colorbar(
       title.position = "top",
       barheight = grid::unit(16, "mm"),
-      barwidth  = grid::unit(3,  "mm")
+      barwidth = grid::unit(3, "mm")
     ))
 }
-
 
 
 #' Make & save UMAP featuremaps for QC metrics
@@ -209,41 +234,45 @@ qc_diagnostic_panel <- function(
 #' @param logify Named logical vector: which metrics to log1p/ log10; defaults below
 #' @export
 qc_featuremaps <- function(
-    obj,
-    metrics = c("nCount_QC","nFeature_QC","pctMT_QC","MALAT1_frac_QC",
-                "stress_score_QC","intronic_frac_QC",
-                "spliced_frac_QC","unspliced_frac_QC","u2s_ratio_QC","dbl_score"),
-    save_dir = "qc_outputs",
-    prefix   = "qc",
-    ncol     = 4,
-    logify   = c(nCount_QC=TRUE, nFeature_QC=TRUE, u2s_ratio_QC=TRUE, dbl_score=FALSE)
-){
+  obj,
+  metrics = c(
+    "nCount_QC", "nFeature_QC", "pctMT_QC", "MALAT1_frac_QC",
+    "stress_score_QC", "intronic_frac_QC",
+    "spliced_frac_QC", "unspliced_frac_QC", "u2s_ratio_QC", "dbl_score"
+  ),
+  save_dir = "qc_outputs",
+  prefix = "qc",
+  ncol = 4,
+  logify = c(nCount_QC = TRUE, nFeature_QC = TRUE, u2s_ratio_QC = TRUE, dbl_score = FALSE)
+) {
   if (!dir.exists(save_dir)) dir.create(save_dir, recursive = TRUE, showWarnings = FALSE)
   obj <- .ensure_pca_umap(obj)
   BG <- getOption("scQCenrich.plot_bg", "white")
 
   present <- intersect(metrics, colnames(obj@meta.data))
-  if (!length(present)) return(invisible(NULL))
+  if (!length(present)) {
+    return(invisible(NULL))
+  }
 
   # nice display labels
   labmap <- c(
-    nCount_QC        = "Total counts (log)",
-    nFeature_QC      = "Detected genes (log)",
-    pctMT_QC         = "% mito",
-    MALAT1_frac_QC   = "MALAT1 fraction",
-    stress_score_QC  = "Stress score",
+    nCount_QC = "Total counts (log)",
+    nFeature_QC = "Detected genes (log)",
+    pctMT_QC = "% mito",
+    MALAT1_frac_QC = "MALAT1 fraction",
+    stress_score_QC = "Stress score",
     intronic_frac_QC = "Intronic fraction",
-    spliced_frac_QC  = "Spliced fraction",
-    unspliced_frac_QC= "Unspliced fraction",
-    u2s_ratio_QC     = "Unspliced/Spliced (log)",
-    dbl_score        = "Doublet score"
+    spliced_frac_QC = "Spliced fraction",
+    unspliced_frac_QC = "Unspliced fraction",
+    u2s_ratio_QC = "Unspliced/Spliced (log)",
+    dbl_score = "Doublet score"
   )
 
   plots <- list()
   for (m in present) {
     v <- obj@meta.data[, m, drop = TRUE]
     # transform & clip
-    if (isTRUE(logify[m])) {   # <- safe: missing names become NA, isTRUE(NA) == FALSE
+    if (isTRUE(logify[m])) { # <- safe: missing names become NA, isTRUE(NA) == FALSE
       if (all(v >= 0, na.rm = TRUE)) v <- log10(v + 1) else v <- log1p(v)
     }
     v <- .winsorize(v, c(0.02, 0.98))

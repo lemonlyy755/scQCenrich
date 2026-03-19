@@ -86,41 +86,47 @@
 # v5/v4-safe getter that ALWAYS returns a dgCMatrix
 .get_assay_data <- function(obj, assay, layer_or_slot) {
   .dbg("GetAssayData(", assay, " : ", layer_or_slot, ")")
-  # 1) Preferred v5: explicit layer on assay
-  out <- suppressWarnings(try(SeuratObject::GetAssayData(obj, assay = assay, layer = layer_or_slot),
-                              silent = TRUE)
+
+  # 1) Preferred v5: explicit layer on Seurat object
+  out <- suppressWarnings(
+    try(SeuratObject::GetAssayData(obj, assay = assay, layer = layer_or_slot), silent = TRUE)
   )
-  if (!inherits(out, "try-error") && !is.null(out))
-  {
-    return(.to_dgC(out, paste0(
-      assay, ":", layer_or_slot, " [v5-layer]"
-    )))
+  if (!inherits(out, "try-error") && !is.null(out)) {
+    return(.to_dgC(out, paste0(assay, ":", layer_or_slot, " [v5-layer]")))
   }
+
   # 2) Try using assay object directly
-  ao <- suppressWarnings(try(obj[[assay]], silent = TRUE)
-  )
-  if (!inherits(ao, "try-error") && !is.null(ao))
-  {
-    out <- suppressWarnings(try(SeuratObject::GetAssayData(ao, layer = layer_or_slot),
-                                silent = TRUE)
+  ao <- suppressWarnings(try(obj[[assay]], silent = TRUE))
+  if (!inherits(ao, "try-error") && !is.null(ao)) {
+
+    out <- suppressWarnings(
+      try(SeuratObject::GetAssayData(ao, layer = layer_or_slot), silent = TRUE)
     )
-    if (!inherits(out, "try-error") && !is.null(out))
-    {
-      return(
-        .to_dgC(out, paste0(
-          assay, ":", layer_or_slot, " [assay-layer]"
-        )
-        ))
+    if (!inherits(out, "try-error") && !is.null(out)) {
+      return(.to_dgC(out, paste0(assay, ":", layer_or_slot, " [assay-layer]")))
+    }
+
+    # 3) Legacy fallback for pre-v5 objects: read S4 slot directly (NO GetAssayData(slot=...))
+    if (methods::isS4(ao)) {
+      sn <- tryCatch(methods::slotNames(ao), error = function(e) character(0))
+      if (length(sn) && layer_or_slot %in% sn) {
+        .dbg("Legacy slot direct read: ", assay, "@", layer_or_slot)
+        out2 <- tryCatch(methods::slot(ao, layer_or_slot), error = function(e) NULL)
+        if (!is.null(out2)) {
+          return(.to_dgC(out2, paste0(assay, ":", layer_or_slot, " [legacy-slot-direct]")))
+        }
+      }
     }
   }
-  # 3) v4 fallback: slot (deprecated in v5)
-  out <- suppressWarnings(
-    SeuratObject::GetAssayData(obj, assay = assay, slot = layer_or_slot)
-  )
-  .to_dgC(
-    out, paste0(assay, ":", layer_or_slot, " [slot-fallback]")
+
+  stop(
+    sprintf(
+      "[scQCenrich] Failed to obtain assay '%s' layer '%s'. Try JoinLayers() / UpdateSeuratObject() and ensure the layer exists.",
+      assay, layer_or_slot
+    )
   )
 }
+
 
 #' @keywords internal
 .ensure_layers_and_data <- function(obj,

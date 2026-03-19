@@ -35,7 +35,7 @@ knitr::opts_chunk$set(
 
 suppressPackageStartupMessages({
   library(ggplot2)
-  BG <- getOption("scQCenrich.plot_bg", "white")  # "white" or "transparent"
+  BG <- getOption("scQCenrich.plot_bg", "white") # "white" or "transparent"
 
   if (requireNamespace("bslib", quietly = TRUE)) {
     theme <- bslib::bs_theme(
@@ -51,10 +51,11 @@ suppressPackageStartupMessages({
   }
   # ggplot default look with white panel & plot background
   theme_set(theme_classic(base_size = 11) +
-              theme(plot.background  = element_rect(fill = BG, colour = NA),
-                    panel.background = element_rect(fill = BG, colour = NA)))
+    theme(
+      plot.background = element_rect(fill = BG, colour = NA),
+      panel.background = element_rect(fill = BG, colour = NA)
+    ))
 })
-
 ```
 
 <style>
@@ -101,15 +102,15 @@ details > div {
 library(htmltools)
 kept <- sum(status_df$qc_status == "keep")
 dropped <- sum(status_df$qc_status == "remove")
-borderline  <- sum(status_df$qc_status == "borderline")
+borderline <- sum(status_df$qc_status == "borderline")
 
 dbls <- sum(as.logical(obj@meta.data$is_doublet %||% FALSE), na.rm = TRUE)
-div(class = "d-flex gap-2",
-  tags$span(class="badge text-bg-success", paste("KEEP", kept)),
-  tags$span(class="badge text-bg-danger",  paste("REMOVE", dropped)),
-    tags$span(class="badge text-bg-warning",  paste("BORDERLINE", borderline)),
-
-  tags$span(class="badge text-bg-warning", paste("DOUBLETS", dbls))
+div(
+  class = "d-flex gap-2",
+  tags$span(class = "badge text-bg-success", paste("KEEP", kept)),
+  tags$span(class = "badge text-bg-danger", paste("REMOVE", dropped)),
+  tags$span(class = "badge text-bg-warning", paste("BORDERLINE", borderline)),
+  tags$span(class = "badge text-bg-warning", paste("DOUBLETS", dbls))
 )
 ```
 
@@ -117,8 +118,11 @@ div(class = "d-flex gap-2",
 
 ```{r umap-qc, fig.width=7, fig.height=6}
 umap_png <- file.path(save_dir, "qc_umap_qc.png")
-if (file.exists(umap_png)) knitr::include_graphics(umap_png) else {
-  plot.new(); text(0.5, 0.5, "UMAP image not found; run qc_diagnostic_panel() first.")
+if (file.exists(umap_png)) {
+  knitr::include_graphics(umap_png)
+} else {
+  plot.new()
+  text(0.5, 0.5, "UMAP image not found; run qc_diagnostic_panel() first.")
 }
 ```
 
@@ -155,19 +159,19 @@ if (!inherits(p_try, "try-error")) {
 } else {
   # Robust manual labeling
   emb <- Seurat::Embeddings(obj, "umap")
-  cl  <- as.character(obj$seurat_clusters)
-  ok  <- is.finite(emb[, 1]) & is.finite(emb[, 2]) & !is.na(cl)
+  cl <- as.character(obj$seurat_clusters)
+  ok <- is.finite(emb[, 1]) & is.finite(emb[, 2]) & !is.na(cl)
   emb <- emb[ok, , drop = FALSE]
-  cl  <- cl[ok]
+  cl <- cl[ok]
 
   # rowsum-based centers (works even if colnames are odd)
   if (nrow(emb) && length(cl)) {
     n_by <- as.vector(table(cl)[rownames(rowsum(emb[, 1, drop = FALSE], cl))])
-    cen  <- rowsum(emb, cl) / pmax(n_by, 1)
+    cen <- rowsum(emb, cl) / pmax(n_by, 1)
     lab_df <- data.frame(
       UMAP_1 = cen[, 1],
       UMAP_2 = cen[, 2],
-      label  = rownames(cen),
+      label = rownames(cen),
       check.names = FALSE
     )
 
@@ -191,8 +195,6 @@ if (!inherits(p_try, "try-error")) {
       ggplot2::ggtitle("UMAP (Seurat clusters)")
   }
 }
-
-
 ```
 
 
@@ -200,8 +202,11 @@ if (!inherits(p_try, "try-error")) {
 
 ```{r umap-annot, fig.width=7, fig.height=6}
 annot_png <- file.path(save_dir, "qc_umap_annotation.png")
-if (file.exists(annot_png)) knitr::include_graphics(annot_png) else {
-  plot.new(); text(0.5, 0.5, "Annotation UMAP not found.")
+if (file.exists(annot_png)) {
+  knitr::include_graphics(annot_png)
+} else {
+  plot.new()
+  text(0.5, 0.5, "Annotation UMAP not found.")
 }
 ```
 
@@ -211,14 +216,17 @@ if (file.exists(annot_png)) knitr::include_graphics(annot_png) else {
 dbl_umap <- file.path(save_dir, "qc_umap_doublet.png")
 dbl_bar1 <- file.path(save_dir, "qc_doublet_rate_by_group.png")
 
-if (file.exists(dbl_umap)) knitr::include_graphics(dbl_umap) else {
-  plot.new(); text(0.5, 0.5, "Doublet UMAP not found.")
+if (file.exists(dbl_umap)) {
+  knitr::include_graphics(dbl_umap)
+} else {
+  plot.new()
+  text(0.5, 0.5, "Doublet UMAP not found.")
 }
 if (file.exists(dbl_bar1)) knitr::include_graphics(dbl_bar1)
 
 md <- obj@meta.data
 if ("dbl_score" %in% colnames(md)) {
-  show <- md[, c("dbl_score","is_doublet"), drop = FALSE]
+  show <- md[, c("dbl_score", "is_doublet"), drop = FALSE]
   show$cell <- rownames(md)
   show <- head(show[order(show$dbl_score, decreasing = TRUE), ], 2000)
   if (requireNamespace("DT", quietly = TRUE)) {
@@ -239,13 +247,19 @@ if ("dbl_score" %in% colnames(md)) {
 
 ```{r annot-validation}
 heat_png <- file.path(save_dir, "celltype_gene_heatmap.png")
-go_png   <- file.path(save_dir, "celltype_go_barplot.png")
+go_png <- file.path(save_dir, "celltype_go_barplot.png")
 
-if (file.exists(heat_png)) knitr::include_graphics(heat_png) else
+if (file.exists(heat_png)) {
+  knitr::include_graphics(heat_png)
+} else {
   cat("> Marker heatmap not found (validation_plots_post_annotation not run or ComplexHeatmap not installed).\n")
+}
 
-if (file.exists(go_png)) knitr::include_graphics(go_png) else
+if (file.exists(go_png)) {
+  knitr::include_graphics(go_png)
+} else {
   cat("> GO barplot not found (clusterProfiler/OrgDb not installed or no enriched terms).\n")
+}
 
 go2_png <- file.path(save_dir, "cluster_go_barplot.png")
 if (file.exists(go2_png)) knitr::include_graphics(go2_png)
@@ -256,8 +270,11 @@ if (file.exists(go2_png)) knitr::include_graphics(go2_png)
 ```{r annot-conf}
 # choose an object variable provided to the template
 obj_for_plot <- NULL
-for (nm in c("obj","obj_keep","seu_qc","seu","obj_filtered","obj_all")) {
-  if (exists(nm, inherits = FALSE)) { obj_for_plot <- get(nm); break }
+for (nm in c("obj", "obj_keep", "seu_qc", "seu", "obj_filtered", "obj_all")) {
+  if (exists(nm, inherits = FALSE)) {
+    obj_for_plot <- get(nm)
+    break
+  }
 }
 if (!exists("imgDir", inherits = FALSE)) imgDir <- "qc_outputs"
 
@@ -275,31 +292,35 @@ if (!is.null(obj_for_plot)) {
 } else {
   cat("*(No Seurat object available for plotting.)*")
 }
-
 ```
 
 ### QC Feature maps
 
 ```{r qc-featuremaps, fig.width=7, fig.height=6}
 grid_png <- file.path(save_dir, "qc_featuremaps_grid.png")
-indiv    <- Sys.glob(file.path(save_dir, "qc_featuremap_*.png"))
+indiv <- Sys.glob(file.path(save_dir, "qc_featuremap_*.png"))
 
 if (file.exists(grid_png)) {
   knitr::include_graphics(grid_png)
 } else if (length(indiv)) {
   for (p in head(indiv, 12)) knitr::include_graphics(p)
 } else {
-  plot.new(); text(0.5, 0.5, "No featuremaps found. (qc_featuremaps() not run?)")
+  plot.new()
+  text(0.5, 0.5, "No featuremaps found. (qc_featuremaps() not run?)")
 }
 ```
 
 ### Per-sample summary
 
 ```{r sample-summary, results="asis"}
-suppressPackageStartupMessages({library(dplyr)})
+suppressPackageStartupMessages({
+  library(dplyr)
+})
 
-df <- as.data.frame(metrics); df$cell <- rownames(df)
-md <- obj@meta.data; md$cell <- rownames(md)
+df <- as.data.frame(metrics)
+df$cell <- rownames(df)
+md <- obj@meta.data
+md$cell <- rownames(md)
 SCOL <- get0("SCOL", ifnotfound = NULL)
 
 cols <- c("cell", "qc_status", "is_doublet", SCOL)
@@ -315,28 +336,41 @@ if (!("is_doublet" %in% colnames(df))) df$is_doublet <- NA
 
 .pick_col <- function(df, md, candidates) {
   for (nm in candidates) {
-    if (nm %in% colnames(df)) return(df[[nm]])
-    if (nm %in% colnames(md)) return(md[[nm]])
+    if (nm %in% colnames(df)) {
+      return(df[[nm]])
+    }
+    if (nm %in% colnames(md)) {
+      return(md[[nm]])
+    }
   }
   NULL
 }
 
 assay <- Seurat::DefaultAssay(obj)
 
-tc <- .pick_col(df, md, c("total_counts","libsize","lib_size","nCount_RNA","nCount","UMIs"))
-if (is.null(tc)) { m <- Seurat::GetAssayData(obj, assay = assay, layer = "counts"); tc <- setNames(as.numeric(Matrix::colSums(m)), colnames(m)) }
+tc <- .pick_col(df, md, c("total_counts", "libsize", "lib_size", "nCount_RNA", "nCount", "UMIs"))
+if (is.null(tc)) {
+  m <- Seurat::GetAssayData(obj, assay = assay, layer = "counts")
+  tc <- setNames(as.numeric(Matrix::colSums(m)), colnames(m))
+}
 df$total_counts <- as.numeric(tc[df$cell])
 
-ng <- .pick_col(df, md, c("n_features","nGenes","nFeature_RNA","nFeature"))
-if (is.null(ng)) { m <- Seurat::GetAssayData(obj, assay = assay, layer = "counts"); ng <- setNames(as.numeric(Matrix::colSums(m > 0)), colnames(m)) }
+ng <- .pick_col(df, md, c("n_features", "nGenes", "nFeature_RNA", "nFeature"))
+if (is.null(ng)) {
+  m <- Seurat::GetAssayData(obj, assay = assay, layer = "counts")
+  ng <- setNames(as.numeric(Matrix::colSums(m > 0)), colnames(m))
+}
 df$n_features <- as.numeric(ng[df$cell])
 
-pm <- .pick_col(df, md, c("pct_mito","percent.mt","percent_mito","mito_percent"))
+pm <- .pick_col(df, md, c("pct_mito", "percent.mt", "percent_mito", "mito_percent"))
 if (is.null(pm)) {
   m <- Seurat::GetAssayData(obj, assay = assay, layer = "counts")
   idx <- .mt_gene_indices(rownames(m), species = get0("species", ifnotfound = "mouse"))
-  pm <- if (length(idx)) 100 * Matrix::colSums(m[idx,,drop=FALSE]) / pmax(Matrix::colSums(m),1)
-        else setNames(rep(NA_real_, ncol(m)), colnames(m))
+  pm <- if (length(idx)) {
+    100 * Matrix::colSums(m[idx, , drop = FALSE]) / pmax(Matrix::colSums(m), 1)
+  } else {
+    setNames(rep(NA_real_, ncol(m)), colnames(m))
+  }
 }
 df$pct_mito <- as.numeric(pm[df$cell])
 
@@ -345,13 +379,14 @@ grp <- if (!is.null(SCOL) && SCOL %in% colnames(df)) dplyr::group_by(df, .data[[
 sum_tbl <- grp %>%
   dplyr::summarise(
     cells_total  = dplyr::n(),
-    cells_keep   = sum(qc_status == "keep", na.rm=TRUE),
-    cells_remove = sum(qc_status == "remove", na.rm=TRUE),
-    libsize_med  = median(total_counts, na.rm=TRUE),
-    genes_med    = median(n_features,   na.rm=TRUE),
-    mito_med     = median(pct_mito,     na.rm=TRUE),
+    cells_keep   = sum(qc_status == "keep", na.rm = TRUE),
+    cells_remove = sum(qc_status == "remove", na.rm = TRUE),
+    libsize_med  = median(total_counts, na.rm = TRUE),
+    genes_med    = median(n_features, na.rm = TRUE),
+    mito_med     = median(pct_mito, na.rm = TRUE),
     dbl_rate     = mean(as.logical(is_doublet), na.rm = TRUE)
-  ) %>% dplyr::ungroup()
+  ) %>%
+  dplyr::ungroup()
 
 if (nrow(sum_tbl) == 0) {
   cat("> No cells to summarise.\n")
@@ -359,9 +394,9 @@ if (nrow(sum_tbl) == 0) {
   tab <- gt::gt(sum_tbl) |>
     gt::fmt_number(columns = c(libsize_med, genes_med, mito_med), decimals = 1) |>
     gt::cols_label(
-      cells_total  = "Cells", cells_keep = "Kept", cells_remove = "Removed",
-      libsize_med  = "Median counts", genes_med = "Median genes",
-      mito_med     = "Median %mito", dbl_rate = "Doublet rate"
+      cells_total = "Cells", cells_keep = "Kept", cells_remove = "Removed",
+      libsize_med = "Median counts", genes_med = "Median genes",
+      mito_med = "Median %mito", dbl_rate = "Doublet rate"
     ) |>
     gt::tab_header(title = gt::md("QC Summary")) |>
     gt::opt_table_font(stack = "system")
@@ -418,33 +453,49 @@ get_pct_mito <- function() {
   if (!length(idx)) {
     # optional: try your internal helper if the package is loaded
     idx <- tryCatch(scQCenrich:::.mt_gene_indices(rownames(m),
-              species = get0("species","mouse")), error = function(...) integer(0))
+      species = get0("species", "mouse")
+    ), error = function(...) integer(0))
   }
-  out <- if (length(idx)) 100 * Matrix::colSums(m[idx,,drop=FALSE]) /
-           pmax(Matrix::colSums(m), 1) else rep(NA_real_, ncol(m))
+  out <- if (length(idx)) {
+    100 * Matrix::colSums(m[idx, , drop = FALSE]) /
+      pmax(Matrix::colSums(m), 1)
+  } else {
+    rep(NA_real_, ncol(m))
+  }
   setNames(as.numeric(out), colnames(m))[cells]
 }
 
 
 total_counts <- get_total_counts()
-n_features   <- get_n_features()
-pct_mito     <- get_pct_mito()
-qc_status    <- obj@meta.data[cells, "qc_status", drop = TRUE]
+n_features <- get_n_features()
+pct_mito <- get_pct_mito()
+qc_status <- obj@meta.data[cells, "qc_status", drop = TRUE]
 
 long <- data.frame(
   total_counts = total_counts,
-  n_features   = n_features,
-  pct_mito     = pct_mito,
-  qc_status    = qc_status,
-  row.names    = cells, check.names  = FALSE
+  n_features = n_features,
+  pct_mito = pct_mito,
+  qc_status = qc_status,
+  row.names = cells, check.names = FALSE
 )
-long <- long[complete.cases(long[c("total_counts","n_features","pct_mito")]) & !is.na(long$qc_status), , drop = FALSE]
+long <- long[complete.cases(long[c("total_counts", "n_features", "pct_mito")]) & !is.na(long$qc_status), , drop = FALSE]
 
-p1 <- ggplot(long, aes(total_counts, fill = qc_status)) + geom_histogram(bins = 60, alpha = .8) + theme_classic() + labs(title = "Library size")
-p2 <- ggplot(long, aes(n_features,   fill = qc_status)) + geom_histogram(bins = 60, alpha = .8) + theme_classic() + labs(title = "#Features")
-p3 <- ggplot(long, aes(pct_mito,     fill = qc_status)) + geom_histogram(bins = 60, alpha = .8) + theme_classic() + labs(title = "% Mito")
+p1 <- ggplot(long, aes(total_counts, fill = qc_status)) +
+  geom_histogram(bins = 60, alpha = .8) +
+  theme_classic() +
+  labs(title = "Library size")
+p2 <- ggplot(long, aes(n_features, fill = qc_status)) +
+  geom_histogram(bins = 60, alpha = .8) +
+  theme_classic() +
+  labs(title = "#Features")
+p3 <- ggplot(long, aes(pct_mito, fill = qc_status)) +
+  geom_histogram(bins = 60, alpha = .8) +
+  theme_classic() +
+  labs(title = "% Mito")
 
-print(p1); print(p2); print(p3)
+print(p1)
+print(p2)
+print(p3)
 ```
 
 ### Removed cells (top 2,000 rows)

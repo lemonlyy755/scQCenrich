@@ -44,18 +44,32 @@
   tgt <- target_cells
 
   pass_try <- function(src_key, tgt_key, pass_name) {
-    # Build map from src_key -> src_col, ensure uniqueness on both sides
-    if (anyDuplicated(src_key) || anyDuplicated(tgt_key)) {
-      .scqce_dbg("[%s] pass=%s skipped due to duplicates (src_dup=%s tgt_dup=%s)",
-                 tag, pass_name, anyDuplicated(src_key), anyDuplicated(tgt_key))
+    # Target must be unique — otherwise 1:1 match is impossible.
+    if (anyDuplicated(tgt_key)) {
+      .scqce_dbg("[%s] pass=%s skipped: target keys are not unique", tag, pass_name)
       return(NULL)
     }
-    m <- match(tgt_key, src_key)
-    ok <- !is.na(m)
+    # Source may have duplicates (e.g. multi-sample loom: 'sampleA:BARCODEx' and 'sampleB:BARCODEx').
+    # Build a first-occurrence index so match() picks the right column safely.
+    src_first <- !duplicated(src_key) # TRUE for first occurrence of each key
+    src_key_u <- src_key[src_first] # unique source keys (first occurrence)
+    src_idx_u <- seq_along(src_key)[src_first] # original column indices
+    if (anyDuplicated(src_key)) {
+      .scqce_dbg(
+        "[%s] pass=%s: source has %d duplicate keys; using first-occurrence match",
+        tag, pass_name, sum(duplicated(src_key))
+      )
+    }
+    pos <- match(tgt_key, src_key_u) # pos[i] = which row of src_key_u matches tgt_key[i]
+    # translate back to original column indices
+    idx <- ifelse(is.na(pos), NA_integer_, src_idx_u[pos])
+    ok <- !is.na(idx)
     n_ok <- sum(ok)
     .scqce_dbg("[%s] pass=%s matches: %d / %d", tag, pass_name, n_ok, length(tgt))
-    if (!n_ok) return(NULL)
-    list(idx = m, ok = ok, name = pass_name, n_ok = n_ok)
+    if (!n_ok) {
+      return(NULL)
+    }
+    list(idx = idx, ok = ok, name = pass_name, n_ok = n_ok)
   }
 
   # Pass 0: exact
@@ -81,8 +95,10 @@
   }
 
   if (is.null(res)) {
-    .scqce_dbg("[%s] NO MATCH after all passes. example target cells: %s", tag,
-               paste(utils::head(tgt, 5), collapse = ", "))
+    .scqce_dbg(
+      "[%s] NO MATCH after all passes. example target cells: %s", tag,
+      paste(utils::head(tgt, 5), collapse = ", ")
+    )
     attr(mat, "align_info") <- list(pass = "none", matched = 0L, of = length(tgt))
     return(mat[, 0, drop = FALSE]) # empty, caller will handle NA fill
   }
@@ -123,7 +139,7 @@
   n_cells <- length(target_cells)
 
   # initialize NA vectors
-  nCount_spliced   <- setNames(rep(NA_real_, n_cells), target_cells)
+  nCount_spliced <- setNames(rep(NA_real_, n_cells), target_cells)
   nFeature_spliced <- nCount_spliced
   nCount_unspliced <- nCount_spliced
   nFeature_unspliced <- nCount_spliced
@@ -132,9 +148,10 @@
   if (!is.null(sp_al) && ncol(sp_al)) {
     cs <- Matrix::colSums(sp_al)
     nf <- Matrix::colSums(sp_al > 0)
-    nCount_spliced[colnames(sp_al)]   <- cs
+    nCount_spliced[colnames(sp_al)] <- cs
     nFeature_spliced[colnames(sp_al)] <- nf
-    info <- attr(sp_al, "align_info"); .scqce_dbg("[spliced_ext] aligned %d/%d (pass=%s)", info$matched, info$of, info$pass)
+    info <- attr(sp_al, "align_info")
+    .scqce_dbg("[spliced_ext] aligned %d/%d (pass=%s)", info$matched, info$of, info$pass)
   } else {
     .scqce_dbg("[spliced_ext] aligned 0/%d", n_cells)
   }
@@ -142,19 +159,20 @@
   if (!is.null(un_al) && ncol(un_al)) {
     cs <- Matrix::colSums(un_al)
     nf <- Matrix::colSums(un_al > 0)
-    nCount_unspliced[colnames(un_al)]   <- cs
+    nCount_unspliced[colnames(un_al)] <- cs
     nFeature_unspliced[colnames(un_al)] <- nf
-    info <- attr(un_al, "align_info"); .scqce_dbg("[unspliced_ext] aligned %d/%d (pass=%s)", info$matched, info$of, info$pass)
+    info <- attr(un_al, "align_info")
+    .scqce_dbg("[unspliced_ext] aligned %d/%d (pass=%s)", info$matched, info$of, info$pass)
   } else {
     .scqce_dbg("[unspliced_ext] aligned 0/%d", n_cells)
   }
 
   # fractions
   tot <- nCount_spliced + nCount_unspliced
-  spliced_frac   <- ifelse(tot > 0, nCount_spliced / tot, NA_real_)
+  spliced_frac <- ifelse(tot > 0, nCount_spliced / tot, NA_real_)
   unspliced_frac <- ifelse(tot > 0, nCount_unspliced / tot, NA_real_)
-  u2s_ratio      <- ifelse(nCount_spliced > 0, nCount_unspliced / nCount_spliced, NA_real_)
-  intronic_frac  <- ifelse(tot > 0, nCount_unspliced / tot, NA_real_)
+  u2s_ratio <- ifelse(nCount_spliced > 0, nCount_unspliced / nCount_spliced, NA_real_)
+  intronic_frac <- ifelse(tot > 0, nCount_unspliced / tot, NA_real_)
 
   list(
     nCount_spliced = nCount_spliced,
@@ -187,52 +205,66 @@
 #' @param debug logical; defaults to options(scQCenrich.debug, FALSE)
 #' @export
 calcQCmetrics <- function(
-    obj,
-    assay = "RNA",
-    slot  = "counts",              # v4 fallback only
-    species = c("mouse","human"),
-    spliced = NULL, unspliced = NULL,             # same-object layers, or:
-    spliced_obj = NULL, spliced_assay = NULL, spliced_layer = "counts",
-    unspliced_obj = NULL, unspliced_assay = NULL, unspliced_layer = "counts",
-    add_to_meta = TRUE,
-    debug = getOption("scQCenrich.debug", FALSE)
-){
+  obj,
+  assay = "RNA",
+  slot = "counts", # v4 fallback only
+  species = c("mouse", "human"),
+  spliced = NULL, unspliced = NULL, # same-object layers, or:
+  spliced_obj = NULL, spliced_assay = NULL, spliced_layer = "counts",
+  unspliced_obj = NULL, unspliced_assay = NULL, unspliced_layer = "counts",
+  add_to_meta = TRUE,
+  debug = getOption("scQCenrich.debug", FALSE)
+) {
   stopifnot(inherits(obj, "Seurat"))
   species <- match.arg(species)
   cells <- colnames(obj)
 
   # ---- tiny logging helper ----
-  .dbg <- function(...){
+  .dbg <- function(...) {
     if (isTRUE(debug)) message("[scQCenrich-debug][QCmetrics] ", sprintf(...))
   }
 
   # ---- helpers ----
-  .as_dgc <- function(x, nm="matrix"){
-    if (inherits(x, "dgCMatrix")) return(x)
+  .as_dgc <- function(x, nm = "matrix") {
+    if (inherits(x, "dgCMatrix")) {
+      return(x)
+    }
     if (is.null(x)) stop(sprintf("[calcQCmetrics] %s is NULL", nm))
-    if (is.matrix(x)) return(Matrix::Matrix(x, sparse = TRUE))
+    if (is.matrix(x)) {
+      return(Matrix::Matrix(x, sparse = TRUE))
+    }
     y <- tryCatch(as.matrix(x), error = function(e) NULL)
-    if (!is.null(y)) return(Matrix::Matrix(y, sparse = TRUE))
+    if (!is.null(y)) {
+      return(Matrix::Matrix(y, sparse = TRUE))
+    }
     stop(sprintf("[calcQCmetrics] could not coerce %s to dgCMatrix", nm))
   }
 
-  .get_layer <- function(object, assay, layer, fallback_slot=NULL){
+  .get_layer <- function(object, assay, layer, fallback_slot = NULL) {
     # Seurat v5 prefers layers; slot is fallback (v4) :contentReference[oaicite:1]{index=1}
-    mat <- tryCatch(SeuratObject::GetAssayData(object=object, assay=assay, layer=layer),
-                    error=function(e) NULL)
-    if (!is.null(mat) && length(dim(mat))==2L) {
+    mat <- tryCatch(SeuratObject::GetAssayData(object = object, assay = assay, layer = layer),
+      error = function(e) NULL
+    )
+    if (!is.null(mat) && length(dim(mat)) == 2L) {
       .dbg("GetAssayData(layer='%s') -> %s x %s", layer, nrow(mat), ncol(mat))
       return(.as_dgc(mat, sprintf("%s:%s [layer]", assay, layer)))
     }
     if (!is.null(fallback_slot)) {
-      mat2 <- tryCatch(SeuratObject::GetAssayData(object=object, assay=assay, slot=fallback_slot),
-                       error=function(e) NULL)
-      if (!is.null(mat2) && length(dim(mat2))==2L) {
-        .dbg("GetAssayData(slot='%s') -> %s x %s", fallback_slot, nrow(mat2), ncol(mat2))
-        return(.as_dgc(mat2, sprintf("%s:%s [slot]", assay, fallback_slot)))
+      # SeuratObject v5: GetAssayData(slot=...) is defunct, so do a legacy direct slot read if present
+      aa2 <- tryCatch(object[[assay]], error = function(e) NULL)
+      if (!is.null(aa2) && methods::isS4(aa2)) {
+        sn2 <- tryCatch(methods::slotNames(aa2), error = function(e) character(0))
+        if (length(sn2) && fallback_slot %in% sn2) {
+          mat2 <- tryCatch(methods::slot(aa2, fallback_slot), error = function(e) NULL)
+          if (!is.null(mat2) && length(dim(mat2)) == 2L) {
+            .dbg("Legacy slot direct read '%s' -> %s x %s", fallback_slot, nrow(mat2), ncol(mat2))
+            return(.as_dgc(mat2, sprintf("%s:%s [legacy-slot-direct]", assay, fallback_slot)))
+          }
+        }
       }
     }
-    aa <- tryCatch(object[[assay]], error=function(e) NULL)
+
+    aa <- tryCatch(object[[assay]], error = function(e) NULL)
     if (!is.null(aa) && !is.null(aa@layers) && !is.null(aa@layers[[layer]])) {
       mat3 <- aa@layers[[layer]]
       .dbg("assay@layers[['%s']] -> %s x %s", layer, nrow(mat3), ncol(mat3))
@@ -242,17 +274,23 @@ calcQCmetrics <- function(
     stop(sprintf("[calcQCmetrics] Failed to obtain %s:%s (layer/slot).", assay, layer))
   }
 
-  .safe_colsums <- function(m){
-    if (is.null(m) || length(m)==0L) return(numeric(0))
-    if (is.null(dim(m))) m <- Matrix::Matrix(matrix(m, nrow=1L), sparse=TRUE)
-    if (nrow(m)==0L) return(rep(0, ncol(m)))
+  .safe_colsums <- function(m) {
+    if (is.null(m) || length(m) == 0L) {
+      return(numeric(0))
+    }
+    if (is.null(dim(m))) m <- Matrix::Matrix(matrix(m, nrow = 1L), sparse = TRUE)
+    if (nrow(m) == 0L) {
+      return(rep(0, ncol(m)))
+    }
     Matrix::colSums(m)
   }
 
-  .match_layer_same_obj <- function(spec){
-    if (is.null(spec)) return(NULL)
-    if (grepl(":", spec, fixed=TRUE)) {
-      pr <- strsplit(spec, ":", fixed=TRUE)[[1]]
+  .match_layer_same_obj <- function(spec) {
+    if (is.null(spec)) {
+      return(NULL)
+    }
+    if (grepl(":", spec, fixed = TRUE)) {
+      pr <- strsplit(spec, ":", fixed = TRUE)[[1]]
       .get_layer(obj, pr[1], pr[2], fallback_slot = pr[2])
     } else {
       .get_layer(obj, assay, spec, fallback_slot = spec)
@@ -260,48 +298,64 @@ calcQCmetrics <- function(
   }
 
   # ---- barcode normalizer (your variant) + guarded 16-mer fallback ----
-  .norm_cells <- function(v, mode=c("basic","core16")){
+  .norm_cells <- function(v, mode = c("basic", "core16")) {
     mode <- match.arg(mode)
     z <- v
     if (mode == "basic") {
       # drop sample prefix before ':'; drop trailing 'x'; drop trailing '-<digits>'
-      z <- sub("^.*?:", "", z, perl=TRUE)
-      z <- sub("x$", "", z, perl=TRUE)
-      z <- sub("-[0-9]+$", "", z, perl=TRUE)
+      z <- sub("^.*?:", "", z, perl = TRUE)
+      z <- sub("x$", "", z, perl = TRUE)
+      z <- sub("-[0-9]+$", "", z, perl = TRUE)
       return(z)
     } else {
-      core <- sub(".*?([ACGT]{16}).*$", "\\1", toupper(z), perl=TRUE)  # 10x barcodes are 16 bp :contentReference[oaicite:3]{index=3}
+      core <- sub(".*?([ACGT]{16}).*$", "\\1", toupper(z), perl = TRUE) # 10x barcodes are 16 bp :contentReference[oaicite:3]{index=3}
       bad <- !grepl("^[ACGT]{16}$", core)
       core[bad] <- z[bad]
       return(core)
     }
   }
 
-  .align_cols_robust <- function(mat, target_cells, tag="ext"){
+  .align_cols_robust <- function(mat, target_cells, tag = "ext") {
     stopifnot(!is.null(colnames(mat)))
-    src <- colnames(mat); tgt <- target_cells
+    src <- colnames(mat)
+    tgt <- target_cells
 
-    pass_try <- function(src_key, tgt_key, pass_name){
-      if (anyDuplicated(src_key) || anyDuplicated(tgt_key)) {
-        .dbg("[%s] pass=%s skipped (duplicates in keys)", tag, pass_name)
+    pass_try <- function(src_key, tgt_key, pass_name) {
+      # Target must be unique; source may have duplicates (multi-sample loom).
+      if (anyDuplicated(tgt_key)) {
+        .dbg("[%s] pass=%s skipped: target keys are not unique", tag, pass_name)
         return(NULL)
       }
-      idx <- match(tgt_key, src_key)
-      ok  <- !is.na(idx); n_ok <- sum(ok)
+      src_first <- !duplicated(src_key)
+      src_key_u <- src_key[src_first]
+      src_idx_u <- seq_along(src_key)[src_first]
+      if (anyDuplicated(src_key)) {
+        .dbg(
+          "[%s] pass=%s: source has %d duplicate keys; using first-occurrence match",
+          tag, pass_name, sum(duplicated(src_key))
+        )
+      }
+      pos <- match(tgt_key, src_key_u)
+      idx <- ifelse(is.na(pos), NA_integer_, src_idx_u[pos])
+      ok <- !is.na(idx)
+      n_ok <- sum(ok)
       .dbg("[%s] pass=%s matches: %d / %d", tag, pass_name, n_ok, length(tgt))
-      if (!n_ok) return(NULL)
-      list(idx=idx, ok=ok, name=pass_name, n_ok=n_ok)
+      if (!n_ok) {
+        return(NULL)
+      }
+      list(idx = idx, ok = ok, name = pass_name, n_ok = n_ok)
     }
 
     # Pass 0: exact
     best <- pass_try(src, tgt, "exact")
 
     # Pass 1: your basic normalizer on both sides
-    alt1 <- pass_try(.norm_cells(src,"basic"), .norm_cells(tgt,"basic"), "basic")
+    alt1 <- pass_try(.norm_cells(src, "basic"), .norm_cells(tgt, "basic"), "basic")
     if (is.null(best) || (!is.null(alt1) && alt1$n_ok > best$n_ok)) best <- alt1
 
     # Pass 2: core16 (only if unique)
-    src16 <- .norm_cells(src,"core16"); tgt16 <- .norm_cells(tgt,"core16")
+    src16 <- .norm_cells(src, "core16")
+    tgt16 <- .norm_cells(tgt, "core16")
     if (!anyDuplicated(src16) && !anyDuplicated(tgt16)) {
       alt2 <- pass_try(src16, tgt16, "core16")
       if (is.null(best) || (!is.null(alt2) && alt2$n_ok > best$n_ok)) best <- alt2
@@ -310,109 +364,119 @@ calcQCmetrics <- function(
     }
 
     if (is.null(best)) {
-      .dbg("[%s] NO MATCH after all passes. example targets: %s", tag, paste(utils::head(tgt,5), collapse=", "))
-      attr(mat, "align_info") <- list(pass="none", matched=0L, of=length(tgt))
-      return(mat[, 0, drop=FALSE]) # empty -> caller fills NA
+      .dbg("[%s] NO MATCH after all passes. example targets: %s", tag, paste(utils::head(tgt, 5), collapse = ", "))
+      attr(mat, "align_info") <- list(pass = "none", matched = 0L, of = length(tgt))
+      return(mat[, 0, drop = FALSE]) # empty -> caller fills NA
     }
 
-    aligned <- mat[, best$idx[best$ok], drop=FALSE]
+    aligned <- mat[, best$idx[best$ok], drop = FALSE]
     colnames(aligned) <- tgt[best$ok]
     if (isTRUE(debug)) {
-      dir.create("qc_outputs", showWarnings=FALSE, recursive=TRUE)
-      dbg <- data.frame(target=tgt, src=src[best$idx], matched=best$ok, pass=best$name, stringsAsFactors=FALSE)
-      utils::write.csv(dbg, file=file.path("qc_outputs", sprintf("splice_alignment_debug_%s.csv", tag)), row.names=FALSE)
+      dir.create("qc_outputs", showWarnings = FALSE, recursive = TRUE)
+      dbg <- data.frame(target = tgt, src = src[best$idx], matched = best$ok, pass = best$name, stringsAsFactors = FALSE)
+      utils::write.csv(dbg, file = file.path("qc_outputs", sprintf("splice_alignment_debug_%s.csv", tag)), row.names = FALSE)
       .dbg("[%s] wrote qc_outputs/splice_alignment_debug_%s.csv", tag, tag)
     }
-    attr(aligned, "align_info") <- list(pass=best$name, matched=best$n_ok, of=length(tgt))
+    attr(aligned, "align_info") <- list(pass = best$name, matched = best$n_ok, of = length(tgt))
     aligned
   }
 
   # ---- base counts & basic QC ----
-  counts <- .get_layer(obj, assay, layer="counts", fallback_slot="counts")
-  counts <- counts[, cells, drop=FALSE]
+  counts <- .get_layer(obj, assay, layer = "counts", fallback_slot = "counts")
+  counts <- counts[, cells, drop = FALSE]
   .dbg("Base counts dim: %s x %s (assay=%s)", nrow(counts), ncol(counts), assay)
 
-  nCount   <- .safe_colsums(counts)
+  nCount <- .safe_colsums(counts)
   nFeature <- Matrix::colSums(counts > 0)
 
   rn <- rownames(counts)
-  mito_pat <- if (species=="mouse") "^mt-" else "^MT-"
-  pctMT <- if (any(grepl(mito_pat, rn, ignore.case=TRUE))) {
-    Matrix::colSums(counts[grepl(mito_pat, rn, ignore.case=TRUE), , drop=FALSE]) / pmax(nCount,1)
-  } else rep(NA_real_, length(nCount))
-  .dbg("Mito pattern='%s' | mito genes found: %s", mito_pat, sum(grepl(mito_pat, rn, ignore.case=TRUE)))
+  mito_pat <- if (species == "mouse") "^mt-" else "^MT-"
+  pctMT <- if (any(grepl(mito_pat, rn, ignore.case = TRUE))) {
+    Matrix::colSums(counts[grepl(mito_pat, rn, ignore.case = TRUE), , drop = FALSE]) / pmax(nCount, 1)
+  } else {
+    rep(NA_real_, length(nCount))
+  }
+  .dbg("Mito pattern='%s' | mito genes found: %s", mito_pat, sum(grepl(mito_pat, rn, ignore.case = TRUE)))
 
-  malat_idx <- which(toupper(rn) %in% toupper(c("MALAT1","Malat1")))
-  MALAT1_frac <- if (length(malat_idx)) Matrix::colSums(counts[malat_idx, , drop=FALSE]) / pmax(nCount,1) else rep(NA_real_, length(nCount))
+  malat_idx <- which(toupper(rn) %in% toupper(c("MALAT1", "Malat1")))
+  MALAT1_frac <- if (length(malat_idx)) Matrix::colSums(counts[malat_idx, , drop = FALSE]) / pmax(nCount, 1) else rep(NA_real_, length(nCount))
   .dbg("MALAT1 rows matched: %s", length(malat_idx))
 
   # normalized (for stress score)
-  norm <- tryCatch(.get_layer(obj, assay, layer="data", fallback_slot="data"), error=function(e) NULL)
-  if (is.null(norm) || nrow(norm)==0L){
-    lib <- pmax(nCount,1)
-    norm <- log1p(t(t(counts)/lib) * 1e6)
+  norm <- tryCatch(.get_layer(obj, assay, layer = "data", fallback_slot = "data"), error = function(e) NULL)
+  if (is.null(norm) || nrow(norm) == 0L) {
+    lib <- pmax(nCount, 1)
+    norm <- log1p(Matrix::t(Matrix::t(counts) / lib) * 1e6)
     norm <- .as_dgc(norm, "logCPM")
     .dbg("Norm layer missing -> using logCPM fallback (rows=%s, cols=%s)", nrow(norm), ncol(norm))
   } else {
-    norm <- norm[, cells, drop=FALSE]
+    norm <- norm[, cells, drop = FALSE]
     .dbg("Norm data (layer='data') dims: %s x %s", nrow(norm), ncol(norm))
   }
 
   # ---- spliced/unspliced (same object or external) ----
-  get_ext <- function(o, a, l, label){
+  get_ext <- function(o, a, l, label) {
     .dbg("[%s] trying assay=%s layer/slot=%s", label, a, l)
-    m <- .get_layer(o, a, layer=l, fallback_slot=l)
+    m <- .get_layer(o, a, layer = l, fallback_slot = l)
     .dbg("[%s] raw dim: %s x %s", label, nrow(m), ncol(m))
     m
   }
 
   spliced_raw <- if (!is.null(spliced_obj)) {
-    stopifnot(inherits(spliced_obj,"Seurat"), !is.null(spliced_assay))
+    stopifnot(inherits(spliced_obj, "Seurat"), !is.null(spliced_assay))
     get_ext(spliced_obj, spliced_assay, spliced_layer, "spliced_ext")
   } else if (!is.null(spliced)) .match_layer_same_obj(spliced) else NULL
 
   unspliced_raw <- if (!is.null(unspliced_obj)) {
-    stopifnot(inherits(unspliced_obj,"Seurat"), !is.null(unspliced_assay))
+    stopifnot(inherits(unspliced_obj, "Seurat"), !is.null(unspliced_assay))
     get_ext(unspliced_obj, unspliced_assay, unspliced_layer, "unspliced_ext")
   } else if (!is.null(unspliced)) .match_layer_same_obj(unspliced) else NULL
 
   # Align columns to the main object’s cell order (safe passes only)
-  sp_al <- if (!is.null(spliced_raw)) .align_cols_robust(spliced_raw, cells, tag="spliced_ext") else NULL
-  un_al <- if (!is.null(unspliced_raw)) .align_cols_robust(unspliced_raw, cells, tag="unspliced_ext") else NULL
+  sp_al <- if (!is.null(spliced_raw)) .align_cols_robust(spliced_raw, cells, tag = "spliced_ext") else NULL
+  un_al <- if (!is.null(unspliced_raw)) .align_cols_robust(unspliced_raw, cells, tag = "unspliced_ext") else NULL
 
-  .dbg("Aligned spliced cols: %s / %s | unspliced cols: %s / %s",
-       if (!is.null(sp_al)) ncol(sp_al) else 0L, length(cells),
-       if (!is.null(un_al)) ncol(un_al) else 0L, length(cells))
+  .dbg(
+    "Aligned spliced cols: %s / %s | unspliced cols: %s / %s",
+    if (!is.null(sp_al)) ncol(sp_al) else 0L, length(cells),
+    if (!is.null(un_al)) ncol(un_al) else 0L, length(cells)
+  )
 
   # ---- compute splicing metrics (fill NA when not aligned) ----
-  nCount_spliced   <- setNames(rep(NA_real_, length(cells)), cells)
+  nCount_spliced <- setNames(rep(NA_real_, length(cells)), cells)
   nFeature_spliced <- nCount_spliced
   nCount_unspliced <- nCount_spliced
   nFeature_unspliced <- nCount_spliced
 
-  if (!is.null(sp_al) && ncol(sp_al)>0) {
-    nCount_spliced[colnames(sp_al)]   <- Matrix::colSums(sp_al)
+  if (!is.null(sp_al) && ncol(sp_al) > 0) {
+    nCount_spliced[colnames(sp_al)] <- Matrix::colSums(sp_al)
     nFeature_spliced[colnames(sp_al)] <- Matrix::colSums(sp_al > 0)
-    info <- attr(sp_al, "align_info"); .dbg("[spliced_ext] aligned %d/%d (pass=%s)", info$matched, info$of, info$pass)
-  } else .dbg("[spliced_ext] aligned 0/%d", length(cells))
+    info <- attr(sp_al, "align_info")
+    .dbg("[spliced_ext] aligned %d/%d (pass=%s)", info$matched, info$of, info$pass)
+  } else {
+    .dbg("[spliced_ext] aligned 0/%d", length(cells))
+  }
 
-  if (!is.null(un_al) && ncol(un_al)>0) {
-    nCount_unspliced[colnames(un_al)]   <- Matrix::colSums(un_al)
+  if (!is.null(un_al) && ncol(un_al) > 0) {
+    nCount_unspliced[colnames(un_al)] <- Matrix::colSums(un_al)
     nFeature_unspliced[colnames(un_al)] <- Matrix::colSums(un_al > 0)
-    info <- attr(un_al, "align_info"); .dbg("[unspliced_ext] aligned %d/%d (pass=%s)", info$matched, info$of, info$pass)
-  } else .dbg("[unspliced_ext] aligned 0/%d", length(cells))
+    info <- attr(un_al, "align_info")
+    .dbg("[unspliced_ext] aligned %d/%d (pass=%s)", info$matched, info$of, info$pass)
+  } else {
+    .dbg("[unspliced_ext] aligned 0/%d", length(cells))
+  }
 
   tot <- nCount_spliced + nCount_unspliced
-  spliced_frac   <- ifelse(tot > 0, nCount_spliced / tot, NA_real_)
+  spliced_frac <- ifelse(tot > 0, nCount_spliced / tot, NA_real_)
   unspliced_frac <- ifelse(tot > 0, nCount_unspliced / tot, NA_real_)
-  u2s_ratio      <- ifelse(nCount_spliced > 0, nCount_unspliced / nCount_spliced, NA_real_)
-  intronic_frac  <- ifelse(tot > 0, nCount_unspliced / tot, NA_real_)
-  .dbg("Cells with tot(spliced+unspliced) <= 0: %s (these yield NA intronic_frac).", sum(!(tot > 0), na.rm=TRUE))
+  u2s_ratio <- ifelse(nCount_spliced > 0, nCount_unspliced / nCount_spliced, NA_real_)
+  intronic_frac <- ifelse(tot > 0, nCount_unspliced / tot, NA_real_)
+  .dbg("Cells with tot(spliced+unspliced) <= 0: %s (these yield NA intronic_frac).", sum(!(tot > 0), na.rm = TRUE))
 
   # ---- stress score (SYMBOL, case-insensitive) ----
-  stress_genes <- default_stress_genes(species)  # SYMBOLs
+  stress_genes <- default_stress_genes(species) # SYMBOLs
   sg <- rownames(norm)[toupper(rownames(norm)) %in% toupper(stress_genes)]
-  stress_score <- if (length(sg)) Matrix::colMeans(norm[sg, , drop=FALSE]) else rep(NA_real_, ncol(norm))
+  stress_score <- if (length(sg)) Matrix::colMeans(norm[sg, , drop = FALSE]) else rep(NA_real_, ncol(norm))
   .dbg("Stress genes matched in norm matrix: %s", length(sg))
 
   # ---- assemble & (optionally) write back ----
@@ -436,19 +500,19 @@ calcQCmetrics <- function(
 
   # keep doublet meta if present
   md <- obj@meta.data
-  out$is_doublet <- if ("is_doublet" %in% colnames(md)) as.logical(md[cells,"is_doublet"]) else FALSE
-  out$dbl_score  <- if ("dbl_score"  %in% colnames(md)) as.numeric(md[cells,"dbl_score"])  else NA_real_
+  out$is_doublet <- if ("is_doublet" %in% colnames(md)) as.logical(md[cells, "is_doublet"]) else FALSE
+  out$dbl_score <- if ("dbl_score" %in% colnames(md)) as.numeric(md[cells, "dbl_score"]) else NA_real_
 
   if (isTRUE(add_to_meta)) {
-    md[cells, "nCount_QC"]         <- out$nCount
-    md[cells, "nFeature_QC"]       <- out$nFeature
-    md[cells, "pctMT_QC"]          <- out$pctMT
-    md[cells, "MALAT1_frac_QC"]    <- out$MALAT1_frac
-    md[cells, "stress_score_QC"]   <- out$stress_score
-    md[cells, "intronic_frac_QC"]  <- out$intronic_frac
-    md[cells, "spliced_frac_QC"]   <- out$spliced_frac
+    md[cells, "nCount_QC"] <- out$nCount
+    md[cells, "nFeature_QC"] <- out$nFeature
+    md[cells, "pctMT_QC"] <- out$pctMT
+    md[cells, "MALAT1_frac_QC"] <- out$MALAT1_frac
+    md[cells, "stress_score_QC"] <- out$stress_score
+    md[cells, "intronic_frac_QC"] <- out$intronic_frac
+    md[cells, "spliced_frac_QC"] <- out$spliced_frac
     md[cells, "unspliced_frac_QC"] <- out$unspliced_frac
-    md[cells, "u2s_ratio_QC"]      <- out$u2s_ratio
+    md[cells, "u2s_ratio_QC"] <- out$u2s_ratio
     obj@meta.data <- md
   }
 
@@ -457,24 +521,25 @@ calcQCmetrics <- function(
 }
 
 
-
-
-
 #' Default stress genes
 #' @param species 'mouse' or 'human'
 #' @return Character vector of stress-related genes
 #' @export
-default_stress_genes <- function(species = c("mouse","human")){
+default_stress_genes <- function(species = c("mouse", "human")) {
   species <- match.arg(species)
   if (species == "mouse") {
-    unique(c("Fos","Fosb","Jun","Junb","Jund","Atf3","Egr1","Dusp1","Dusp2",
-             "Ier2","Ier3","Btg1","Btg2","Zfp36","Zfp36l1","Hspa8","Hsp90ab1",
-             "Hspa1a","Hspa1b","Hspb1","Hsp90aa1","Hsp90b1","Hsph1","Hspe1",
-             "Hspd1","Xbp1","Ddit3"))
+    unique(c(
+      "Fos", "Fosb", "Jun", "Junb", "Jund", "Atf3", "Egr1", "Dusp1", "Dusp2",
+      "Ier2", "Ier3", "Btg1", "Btg2", "Zfp36", "Zfp36l1", "Hspa8", "Hsp90ab1",
+      "Hspa1a", "Hspa1b", "Hspb1", "Hsp90aa1", "Hsp90b1", "Hsph1", "Hspe1",
+      "Hspd1", "Xbp1", "Ddit3"
+    ))
   } else {
-    unique(c("FOS","FOSB","JUN","JUNB","JUND","ATF3","EGR1","DUSP1","DUSP2",
-             "IER2","IER3","BTG1","BTG2","ZFP36","ZFP36L1","HSPA8","HSP90AB1",
-             "HSPA1A","HSPA1B","HSPB1","HSP90AA1","HSP90B1","HSPH1","HSPE1",
-             "HSPD1","XBP1","DDIT3"))
+    unique(c(
+      "FOS", "FOSB", "JUN", "JUNB", "JUND", "ATF3", "EGR1", "DUSP1", "DUSP2",
+      "IER2", "IER3", "BTG1", "BTG2", "ZFP36", "ZFP36L1", "HSPA8", "HSP90AB1",
+      "HSPA1A", "HSPA1B", "HSPB1", "HSP90AA1", "HSP90B1", "HSPH1", "HSPE1",
+      "HSPD1", "XBP1", "DDIT3"
+    ))
   }
 }

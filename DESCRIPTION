@@ -1,6 +1,6 @@
 Package: scQCenrich
 Title: Multi-Metric Quality Control for Single-Cell RNA-Seq
-Version: 0.0.0.9000
+Version: 0.0.0.9002
 Authors@R: 
     person("Yuanyuan", "Liu", , "18211007107@163.com", role = c("aut", "cre"))
 Description: Quality control, doublet handling, cell-type auto-annotation, optional spliced/unspliced metrics, rescue of coherent clusters, and a presentable HTML QC report for Seurat v5 objects.
@@ -24,10 +24,10 @@ Imports:
     png,
     reshape2,
     dbscan,
+    mclust (>= 6.1),
 Suggests:
     sccca,
     SingleR,
-    mclust (>= 6.1),
     ggtree (>= 3.99.0),
     celldex,
     SingleCellExperiment,
@@ -63,3 +63,4 @@ Remotes:
     github::YuLab-SMU/ggtree
 VignetteBuilder: knitr
 LazyData: true
+URL: https://lemonlyy755.github.io/scQCenrich/

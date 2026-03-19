@@ -25,3 +25,11 @@
 ^tests/testthat/testdata$
 ^Meta$
 ^benchmarking$
+^\.lintr$
+^scQCenrich\.code-workspace$
+^test_qc_out$
+^test_qc_out_loom$
+^test_qc_out_std$
+^[^/]*\.png$
+^[^/]*\.pdf$
+^[^/]*\.csv$

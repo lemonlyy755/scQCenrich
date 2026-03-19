@@ -676,8 +676,26 @@ validation_plots_post_annotation <- function(
         head(df$gene[ord], topN)
       })
 
-      # Universe & SYMBOL->ENTREZ mapping
-      all_symbols <- rownames(Seurat::GetAssayData(obj, assay = assay, slot = "data"))
+      # Universe & SYMBOL->ENTREZ mapping (Seurat v5-safe: use layer, never slot)
+      .dbg("[validation_plots] building universe symbols from assay=", assay)
+
+      mat_u <- tryCatch(
+        .get_assay_data(obj, assay = assay, layer_or_slot = "data"),
+        error = function(e) {
+          .dbg("[validation_plots] data layer missing/error: ", conditionMessage(e))
+          NULL
+        }
+      )
+
+      if (is.null(mat_u)) {
+        .dbg("[validation_plots] falling back to counts layer for universe")
+        mat_u <- .get_assay_data(obj, assay = assay, layer_or_slot = "counts")
+      }
+
+      all_symbols <- rownames(mat_u)
+      .dbg("[validation_plots] universe genes n=", length(all_symbols))
+
+
       sym2ent_all <- tryCatch(
         clusterProfiler::bitr(all_symbols, fromType = "SYMBOL", toType = "ENTREZID", OrgDb = OrgDb),
         error = function(e) NULL

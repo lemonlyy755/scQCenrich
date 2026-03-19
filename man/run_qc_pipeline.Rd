@@ -44,7 +44,9 @@ run_qc_pipeline(
   unknown_min_margin = 0.01,
   unknown_min_top = 0.01,
   qc_strength = c("auto", "default", "lenient", "strict"),
-  enrichment_plots = T
+  rescue_mode = c("moderate", "lenient", "strict", "none"),
+  cancer_bypass = FALSE,
+  enrichment_plots = TRUE
 )
 }
 \arguments{
@@ -80,13 +82,16 @@ run_qc_pipeline(
 
 \item{annot_method}{'SingleR','marker_score','none'}
 
-\item{marker_source}{'panglao','internal','custom' (only used when annot_method='marker_score')}
+\item{marker_source}{'panglao', 'internal', 'custom'
+(only used when annot_method='marker_score')}
 
-\item{panglao_file}{Optional path to Panglao TSV (defaults to inst/extdata if present)}
+\item{panglao_file}{Optional path to Panglao TSV (defaults to
+inst/extdata if present)}
 
 \item{canonical_only, ui_max, min_genes}{Panglao signature filtering knobs}
 
-\item{tissue}{Character vector of target organs/tissues, e.g. c("Liver","Kidney").}
+\item{tissue}{Character vector of target organs/tissues, e.g.
+c("Liver", "Kidney").}
 
 \item{report_html}{Logical; if TRUE, render the report}
 
@@ -106,12 +111,15 @@ run_qc_pipeline(
 
 \item{unknown_min_top}{Integer; guard for "unknown" assignment.}
 
-\item{qc_strength}{One of \code{c("lenient","moderate","strict")}; passed to \code{flagLowQuality()}.}
+\item{qc_strength}{One of \code{c("lenient","moderate","strict")};
+passed to \code{flagLowQuality()}.}
 
-\item{enrichment_plots}{logical. If TRUE, run GO/KEGG enrichment plots; if FALSE, skip. Default: TRUE.}
+\item{enrichment_plots}{logical. If TRUE, run GO/KEGG enrichment plots;
+if FALSE, skip. Default: TRUE.}
 }
 \value{
-A list with at least: \code{$obj} (QC-kept), \code{$metrics}, \code{$status_df}, \code{$report_file}.
+A list with at least: \code{$obj} (QC-kept), \code{$metrics},
+\code{$status_df}, \code{$report_file}.
 Also returns \code{$obj_all} for convenience.
 }
 \description{
