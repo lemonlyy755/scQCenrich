@@ -173,8 +173,19 @@ run_qc_pipeline(
 
 - qc_strength:
 
-  One of `c("lenient","moderate","strict")`; passed to
+  One of `c("auto","default","lenient","strict")`; passed to
   [`flagLowQuality()`](https://lemonlyy755.github.io/scQCenrich/reference/flagLowQuality.md).
+
+- rescue_mode:
+
+  One of `c("moderate","lenient","strict","none")`; controls how
+  aggressively borderline cells are rescued. Default `"moderate"`.
+
+- cancer_bypass:
+
+  Logical. If TRUE, clusters with healthy splicing profiles but high
+  removal rates are exempt from the removal-fraction penalty (useful for
+  cancer datasets). Default `FALSE`.
 
 - enrichment_plots:
 

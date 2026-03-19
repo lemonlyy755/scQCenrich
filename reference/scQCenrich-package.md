@@ -20,6 +20,12 @@ Features:
 See README for how to set `spliced` / `unspliced` inputs (assay or
 assay:layer).
 
+## See also
+
+Useful links:
+
+- <https://lemonlyy755.github.io/scQCenrich/>
+
 ## Author
 
 **Maintainer**: Yuanyuan Liu <18211007107@163.com>

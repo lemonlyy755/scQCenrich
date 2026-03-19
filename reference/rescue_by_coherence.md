@@ -43,7 +43,13 @@ rescue_by_coherence(
 
 - rescue_mode:
 
-  "moderate" (default), "conservative", or "aggressive"
+  "moderate" (default), "lenient", "strict", or "none"
+
+- cancer_bypass:
+
+  Logical. If TRUE, clusters with healthy splicing profiles but high
+  removal rates are exempt from the removal-fraction penalty, allowing
+  potential cancer cell populations to be rescued. Default FALSE.
 
 - coherence_min:
 

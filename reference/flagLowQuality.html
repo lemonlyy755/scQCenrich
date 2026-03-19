@@ -92,7 +92,13 @@ column 'is_doublet' (as added by calcQCmetrics), it will be honored.</p></dd>
 
 
 <dt id="arg-rescue-mode">rescue_mode<a class="anchor" aria-label="anchor" href="#arg-rescue-mode"></a></dt>
-<dd><p>"moderate","conservative","aggressive"</p></dd>
+<dd><p>"moderate","lenient","strict", or "none"</p></dd>
+
+
+<dt id="arg-cancer-bypass">cancer_bypass<a class="anchor" aria-label="anchor" href="#arg-cancer-bypass"></a></dt>
+<dd><p>Logical. If TRUE, clusters with healthy splicing profiles but high
+removal rates are exempt from the removal-fraction penalty, allowing potential
+cancer cell populations to be rescued. Default FALSE.</p></dd>
 
 
 <dt id="arg-min-cluster-size">min_cluster_size<a class="anchor" aria-label="anchor" href="#arg-min-cluster-size"></a></dt>

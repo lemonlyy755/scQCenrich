@@ -214,8 +214,19 @@ c("Liver", "Kidney").</p></dd>
 
 
 <dt id="arg-qc-strength">qc_strength<a class="anchor" aria-label="anchor" href="#arg-qc-strength"></a></dt>
-<dd><p>One of <code>c("lenient","moderate","strict")</code>;
+<dd><p>One of <code>c("auto","default","lenient","strict")</code>;
 passed to <code><a href="flagLowQuality.html">flagLowQuality()</a></code>.</p></dd>
+
+
+<dt id="arg-rescue-mode">rescue_mode<a class="anchor" aria-label="anchor" href="#arg-rescue-mode"></a></dt>
+<dd><p>One of <code>c("moderate","lenient","strict","none")</code>;
+controls how aggressively borderline cells are rescued. Default <code>"moderate"</code>.</p></dd>
+
+
+<dt id="arg-cancer-bypass">cancer_bypass<a class="anchor" aria-label="anchor" href="#arg-cancer-bypass"></a></dt>
+<dd><p>Logical. If TRUE, clusters with healthy splicing profiles but high
+removal rates are exempt from the removal-fraction penalty (useful for cancer datasets).
+Default <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-enrichment-plots">enrichment_plots<a class="anchor" aria-label="anchor" href="#arg-enrichment-plots"></a></dt>
