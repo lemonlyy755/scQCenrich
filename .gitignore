@@ -1,22 +1,46 @@
-.Rproj.user
-inst/doc
-/doc/
-/qc_outputs/
-/tests/testthat/qc_outputs/
-*.log
-*.txt
-/*.rds
+# R / RStudio session artifacts
 .Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+R/.Rhistory
+R/.lintr
+Rplots.pdf
+
+# Dev / scratch files
 dev.R
-package_combined.txt
-/Meta/
-/benchmarking/
 .lintr
 scQCenrich.code-workspace
+package_combined.txt
+
+# Generated package docs/meta
+/Meta/
+/doc/
+inst/doc
+docs
+
+# Build outputs
+vignettes/*.html
+vignettes/*.pdf
+vignettes/*.R
+vignettes/.build.timestamp
+vignettes/qc_outputs/
+
+# QC output directories
+/qc_outputs/
+/tests/testthat/qc_outputs/
 /test_qc_out/
 /test_qc_out_loom/
 /test_qc_out_std/
+
+# Large data files
+/*.rds
+*.log
+
+# Benchmarking (local scripts/data, not part of package)
+/benchmarking/
+
+# Root-level generated outputs (plots, tables)
 /*.png
 /*.pdf
 /*.csv
-docs
