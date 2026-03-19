@@ -109,7 +109,7 @@
     }
 
     # 3) Legacy fallback for pre-v5 objects: read S4 slot directly (NO GetAssayData(slot=...))
-    if (methods::isS4(ao)) {
+    if (isS4(ao)) {
       sn <- tryCatch(methods::slotNames(ao), error = function(e) character(0))
       if (length(sn) && layer_or_slot %in% sn) {
         .dbg("Legacy slot direct read: ", assay, "@", layer_or_slot)

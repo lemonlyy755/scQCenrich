@@ -111,8 +111,15 @@ c("Liver", "Kidney").}
 
 \item{unknown_min_top}{Integer; guard for "unknown" assignment.}
 
-\item{qc_strength}{One of \code{c("lenient","moderate","strict")};
+\item{qc_strength}{One of \code{c("auto","default","lenient","strict")};
 passed to \code{flagLowQuality()}.}
+
+\item{rescue_mode}{One of \code{c("moderate","lenient","strict","none")};
+controls how aggressively borderline cells are rescued. Default \code{"moderate"}.}
+
+\item{cancer_bypass}{Logical. If TRUE, clusters with healthy splicing profiles but high
+removal rates are exempt from the removal-fraction penalty (useful for cancer datasets).
+Default \code{FALSE}.}
 
 \item{enrichment_plots}{logical. If TRUE, run GO/KEGG enrichment plots;
 if FALSE, skip. Default: TRUE.}

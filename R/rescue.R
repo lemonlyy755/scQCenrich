@@ -5,7 +5,10 @@
 #' @param obj Seurat object
 #' @param celltype_col optional meta column with labels (e.g. 'celltype'); if missing, label-coherence is skipped
 #' @param min_cluster_size minimum cluster size to consider for rescue (default 25)
-#' @param rescue_mode "moderate" (default), "conservative", or "aggressive"
+#' @param rescue_mode "moderate" (default), "lenient", "strict", or "none"
+#' @param cancer_bypass Logical. If TRUE, clusters with healthy splicing profiles but high
+#'   removal rates are exempt from the removal-fraction penalty, allowing potential
+#'   cancer cell populations to be rescued. Default FALSE.
 #' @param metrics Character vector of metric names to consider.
 #' @param detected Numeric vector of detected gene counts per cell (length = ncol(obj)).
 #' @param coherence_min Minimum coherence score required to rescue (default 0.5).

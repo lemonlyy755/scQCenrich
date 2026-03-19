@@ -252,7 +252,7 @@ calcQCmetrics <- function(
     if (!is.null(fallback_slot)) {
       # SeuratObject v5: GetAssayData(slot=...) is defunct, so do a legacy direct slot read if present
       aa2 <- tryCatch(object[[assay]], error = function(e) NULL)
-      if (!is.null(aa2) && methods::isS4(aa2)) {
+      if (!is.null(aa2) && isS4(aa2)) {
         sn2 <- tryCatch(methods::slotNames(aa2), error = function(e) character(0))
         if (length(sn2) && fallback_slot %in% sn2) {
           mat2 <- tryCatch(methods::slot(aa2, fallback_slot), error = function(e) NULL)

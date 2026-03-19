@@ -19,6 +19,13 @@ and (optionally) spliced/unspliced metrics (intronic_frac, unspliced/spliced fra
 \details{
 See README for how to set \code{spliced} / \code{unspliced} inputs (assay or assay:layer).
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://lemonlyy755.github.io/scQCenrich/}
+}
+
+}
 \author{
 \strong{Maintainer}: Yuanyuan Liu \email{18211007107@163.com}
 

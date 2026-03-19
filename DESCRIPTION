@@ -24,8 +24,8 @@ Imports:
     png,
     reshape2,
     dbscan,
-    mclust (>= 6.1),
 Suggests:
+    mclust (>= 6.1),
     sccca,
     SingleR,
     ggtree (>= 3.99.0),

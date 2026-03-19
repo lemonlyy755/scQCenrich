@@ -36,8 +36,13 @@ utils::globalVariables(c("UMAP_1", "UMAP_2", "qc_status", "is_doublet", "group",
 #' @param unknown_min_genes Integer; guard for "unknown" assignment.
 #' @param unknown_min_margin Numeric; guard for "unknown" assignment.
 #' @param unknown_min_top Integer; guard for "unknown" assignment.
-#' @param qc_strength One of \code{c("lenient","moderate","strict")};
+#' @param qc_strength One of \code{c("auto","default","lenient","strict")};
 #'   passed to \code{flagLowQuality()}.
+#' @param rescue_mode One of \code{c("moderate","lenient","strict","none")};
+#'   controls how aggressively borderline cells are rescued. Default \code{"moderate"}.
+#' @param cancer_bypass Logical. If TRUE, clusters with healthy splicing profiles but high
+#'   removal rates are exempt from the removal-fraction penalty (useful for cancer datasets).
+#'   Default \code{FALSE}.
 #' @param enrichment_plots logical. If TRUE, run GO/KEGG enrichment plots;
 #'   if FALSE, skip. Default: TRUE.
 #' @return A list with at least: \code{$obj} (QC-kept), \code{$metrics},
@@ -535,6 +540,17 @@ run_qc_pipeline <- function(obj,
     status_df = status,
     save_dir = save_dir,
     report_file = if (!is.null(rep_path)) {
+      normalizePath(rep_path, winslash = "/", mustWork = FALSE)
+    } else {
+      NULL
+    },
+    # aliases for README compatibility
+    report = if (!is.null(rep_path)) {
+      normalizePath(rep_path, winslash = "/", mustWork = FALSE)
+    } else {
+      NULL
+    },
+    report_path = if (!is.null(rep_path)) {
       normalizePath(rep_path, winslash = "/", mustWork = FALSE)
     } else {
       NULL

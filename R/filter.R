@@ -7,7 +7,10 @@
 #' @param obj optional Seurat object for rescue step
 #' @param celltype_col optional meta column for rescue label coherence
 #' @param sample_col optional sample column (passed to detector; may be NULL)
-#' @param rescue_mode "moderate","conservative","aggressive"
+#' @param rescue_mode "moderate","lenient","strict", or "none"
+#' @param cancer_bypass Logical. If TRUE, clusters with healthy splicing profiles but high
+#'   removal rates are exempt from the removal-fraction penalty, allowing potential
+#'   cancer cell populations to be rescued. Default FALSE.
 #' @param min_cluster_size minimum cluster size to consider for rescue; NULL = adaptive (~0.5% or >=10)
 #' @param doublet_action what to do with predicted doublets in `metrics$is_doublet`:
 #'   "remove" (default), "borderline", or "none"

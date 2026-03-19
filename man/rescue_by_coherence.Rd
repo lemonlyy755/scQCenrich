@@ -27,7 +27,11 @@ rescue_by_coherence(
 
 \item{min_cluster_size}{minimum cluster size to consider for rescue (default 25)}
 
-\item{rescue_mode}{"moderate" (default), "conservative", or "aggressive"}
+\item{rescue_mode}{"moderate" (default), "lenient", "strict", or "none"}
+
+\item{cancer_bypass}{Logical. If TRUE, clusters with healthy splicing profiles but high
+removal rates are exempt from the removal-fraction penalty, allowing potential
+cancer cell populations to be rescued. Default FALSE.}
 
 \item{coherence_min}{Minimum coherence score required to rescue (default 0.5).}
 

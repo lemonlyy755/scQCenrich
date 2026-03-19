@@ -472,6 +472,11 @@ auto_annotate <- function(obj,
   .log("[context] cells=%d features=%d", ncol(obj),
        nrow(Seurat::GetAssayData(obj, assay = assay, layer = "data")))
 
+  if (K < 2 && identical(method, "findmarkers")) {
+    .log("[warn] Only 1 cluster detected; switching method to 'module_score' since 'findmarkers' requires >1 cluster.")
+    method <- "module_score"
+  }
+
   # ---- PATH A: AddModuleScore (existing behavior) ----
   if (identical(method, "module_score")) {
     # 1) signatures (generic or user)
