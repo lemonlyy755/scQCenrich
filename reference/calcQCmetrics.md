@@ -1,0 +1,74 @@
+# Calculate QC metrics (UMIs, genes, mito%, MALAT1, stress; optional splicing metrics) Computes nCount/nFeature, pctMT, MALAT1 fraction, stress_score (case-insensitive SYMBOL match), and optional splicing metrics from same object layers or external Seurat objects. Compatible with Seurat v5 layers and v4 slots. Returns a data.frame and (if add_to_meta=TRUE) writes \*\_QC fields into obj@meta.data (no regression in field names).
+
+Calculate QC metrics (UMIs, genes, mito%, MALAT1, stress; optional
+splicing metrics) Computes nCount/nFeature, pctMT, MALAT1 fraction,
+stress_score (case-insensitive SYMBOL match), and optional splicing
+metrics from same object layers or external Seurat objects. Compatible
+with Seurat v5 layers and v4 slots. Returns a data.frame and (if
+add_to_meta=TRUE) writes \*\_QC fields into obj@meta.data (no regression
+in field names).
+
+## Usage
+
+``` r
+calcQCmetrics(
+  obj,
+  assay = "RNA",
+  slot = "counts",
+  species = c("mouse", "human"),
+  spliced = NULL,
+  unspliced = NULL,
+  spliced_obj = NULL,
+  spliced_assay = NULL,
+  spliced_layer = "counts",
+  unspliced_obj = NULL,
+  unspliced_assay = NULL,
+  unspliced_layer = "counts",
+  add_to_meta = TRUE,
+  debug = getOption("scQCenrich.debug", FALSE)
+)
+```
+
+## Arguments
+
+- obj:
+
+  Seurat object
+
+- assay:
+
+  assay name (default "RNA")
+
+- slot:
+
+  for v4 compatibility ("counts"); ignored when layer is used internally
+
+- species:
+
+  "mouse" or "human"
+
+- spliced, unspliced:
+
+  optional layer spec within same object; either a single layer string
+  (e.g., "spliced") or "assay:layer" (e.g., "spliced:counts"). Ignored
+  if external objects are provided.
+
+- spliced_obj, unspliced_obj:
+
+  optional external Seurat objects
+
+- spliced_assay, unspliced_assay:
+
+  assay names on external objects
+
+- spliced_layer, unspliced_layer:
+
+  layer names on external objects (e.g., "counts")
+
+- add_to_meta:
+
+  write \*\_QC back to obj@meta.data
+
+- debug:
+
+  logical; defaults to options(scQCenrich.debug, FALSE)
