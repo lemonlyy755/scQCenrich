@@ -90,8 +90,27 @@ inst/extdata if present)}
 
 \item{canonical_only, ui_max, min_genes}{Panglao signature filtering knobs}
 
-\item{tissue}{Character vector of target organs/tissues, e.g.
-c("Liver", "Kidney").}
+\item{tissue}{Character vector of organ/tissue names used to subset the
+PanglaoDB marker database before cell-type scoring
+(\code{annot_method = "marker_score"} only).  Supplying the correct
+tissue \strong{greatly improves annotation accuracy} by restricting signatures
+to cell types that are actually present in your sample.
+Pass \code{NULL} (default) to use all tissues.
+
+\strong{Supported tissue names} (case-insensitive, exact match preferred):
+\code{"Adrenal glands"}, \code{"Blood"}, \code{"Bone"},
+\code{"Brain"}, \code{"Connective tissue"}, \code{"Embryo"},
+\code{"Epithelium"}, \code{"Eye"}, \code{"GI tract"},
+\code{"Heart"}, \code{"Immune system"}, \code{"Kidney"},
+\code{"Liver"}, \code{"Lungs"}, \code{"Mammary gland"},
+\code{"Olfactory system"}, \code{"Oral cavity"}, \code{"Pancreas"},
+\code{"Parathyroid glands"}, \code{"Placenta"}, \code{"Reproductive"},
+\code{"Skeletal muscle"}, \code{"Skin"}, \code{"Smooth muscle"},
+\code{"Thymus"}, \code{"Thyroid"}, \code{"Urinary bladder"},
+\code{"Vasculature"}, \code{"Zygote"}.
+
+Example — PBMC / whole blood: \code{tissue = c("Blood", "Immune system")}.
+Example — heart: \code{tissue = "Heart"}.}
 
 \item{report_html}{Logical; if TRUE, render the report}
 
