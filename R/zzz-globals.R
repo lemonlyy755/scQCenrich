@@ -23,10 +23,11 @@ utils::globalVariables(c(
 
 #' toy_seu
 #'
-#' A small example Seurat object used in examples and tests.
+#' A benchmark-derived PBMC Seurat object used in examples and tests.
 #'
-#' @format A \code{Seurat} object with minimal counts and metadata.
-#' @source Generated in package development for demos.
+#' @format A \code{Seurat} object with 500 cells, 12,884 RNA features,
+#' and minimal metadata including \code{cell_type}.
+#' @source Derived from \code{benchmarking/qc_pbmc/pbmc_annotated.rds}
+#' during package development.
 #' @usage data(toy_seu)
 "toy_seu"
-

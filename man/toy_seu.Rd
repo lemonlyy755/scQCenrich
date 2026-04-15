@@ -5,15 +5,17 @@
 \alias{toy_seu}
 \title{toy_seu}
 \format{
-A \code{Seurat} object with minimal counts and metadata.
+A \code{Seurat} object with 500 cells, 12,884 RNA features,
+and minimal metadata including \code{cell_type}.
 }
 \source{
-Generated in package development for demos.
+Derived from \code{benchmarking/qc_pbmc/pbmc_annotated.rds}
+during package development.
 }
 \usage{
 data(toy_seu)
 }
 \description{
-A small example Seurat object used in examples and tests.
+A benchmark-derived PBMC Seurat object used in examples and tests.
 }
 \keyword{datasets}
