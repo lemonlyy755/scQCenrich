@@ -22,6 +22,8 @@
   : Flag low-quality cells
 - [`generic_signatures()`](https://lemonlyy755.github.io/scQCenrich/reference/generic_signatures.md)
   : Generic, cross-tissue marker signatures (broad/extended)
+- [`list_panglao_tissues()`](https://lemonlyy755.github.io/scQCenrich/reference/list_panglao_tissues.md)
+  : List the tissue names supported by the PanglaoDB marker database
 - [`prep_flagged_ranks()`](https://lemonlyy755.github.io/scQCenrich/reference/prep_flagged_ranks.md)
   : Prepare ranked gene stats for dropped vs kept (logCPM mean diff)
 - [`qc_featuremaps()`](https://lemonlyy755.github.io/scQCenrich/reference/qc_featuremaps.md)

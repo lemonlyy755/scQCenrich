@@ -132,7 +132,24 @@ run_qc_pipeline(
 
 - tissue:
 
-  Character vector of target organs/tissues, e.g. c("Liver", "Kidney").
+  Character vector of organ/tissue names used to subset the PanglaoDB
+  marker database before cell-type scoring
+  (`annot_method = "marker_score"` only). Supplying the correct tissue
+  **greatly improves annotation accuracy** by restricting signatures to
+  cell types that are actually present in your sample. Pass `NULL`
+  (default) to use all tissues.
+
+  **Supported tissue names** (case-insensitive, exact match preferred):
+  `"Adrenal glands"`, `"Blood"`, `"Bone"`, `"Brain"`,
+  `"Connective tissue"`, `"Embryo"`, `"Epithelium"`, `"Eye"`,
+  `"GI tract"`, `"Heart"`, `"Immune system"`, `"Kidney"`, `"Liver"`,
+  `"Lungs"`, `"Mammary gland"`, `"Olfactory system"`, `"Oral cavity"`,
+  `"Pancreas"`, `"Parathyroid glands"`, `"Placenta"`, `"Reproductive"`,
+  `"Skeletal muscle"`, `"Skin"`, `"Smooth muscle"`, `"Thymus"`,
+  `"Thyroid"`, `"Urinary bladder"`, `"Vasculature"`, `"Zygote"`.
+
+  Example — PBMC / whole blood: `tissue = c("Blood", "Immune system")`.
+  Example — heart: `tissue = "Heart"`.
 
 - report_html:
 

@@ -75,8 +75,9 @@ delta T cells.
 If you pass an unrecognised tissue name,
 [`run_qc_pipeline()`](https://lemonlyy755.github.io/scQCenrich/reference/run_qc_pipeline.md)
 warns and annotation falls back to all tissues, which is less specific.
-Use `list_panglao_tissues()` to see the supported PanglaoDB tissue
-names:
+Use
+[`list_panglao_tissues()`](https://lemonlyy755.github.io/scQCenrich/reference/list_panglao_tissues.md)
+to see the supported PanglaoDB tissue names:
 
 ``` r
 list_panglao_tissues()
@@ -225,6 +226,8 @@ See the package vignettes for detailed tutorials
   : Flag low-quality cells
 - [`generic_signatures()`](https://lemonlyy755.github.io/scQCenrich/reference/generic_signatures.md)
   : Generic, cross-tissue marker signatures (broad/extended)
+- [`list_panglao_tissues()`](https://lemonlyy755.github.io/scQCenrich/reference/list_panglao_tissues.md)
+  : List the tissue names supported by the PanglaoDB marker database
 - [`prep_flagged_ranks()`](https://lemonlyy755.github.io/scQCenrich/reference/prep_flagged_ranks.md)
   : Prepare ranked gene stats for dropped vs kept (logCPM mean diff)
 - [`qc_featuremaps()`](https://lemonlyy755.github.io/scQCenrich/reference/qc_featuremaps.md)

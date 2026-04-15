@@ -173,8 +173,25 @@ inst/extdata if present)</p></dd>
 
 
 <dt id="arg-tissue">tissue<a class="anchor" aria-label="anchor" href="#arg-tissue"></a></dt>
-<dd><p>Character vector of target organs/tissues, e.g.
-c("Liver", "Kidney").</p></dd>
+<dd><p>Character vector of organ/tissue names used to subset the
+PanglaoDB marker database before cell-type scoring
+(<code>annot_method = "marker_score"</code> only).  Supplying the correct
+tissue <strong>greatly improves annotation accuracy</strong> by restricting signatures
+to cell types that are actually present in your sample.
+Pass <code>NULL</code> (default) to use all tissues.</p>
+<p><strong>Supported tissue names</strong> (case-insensitive, exact match preferred):
+<code>"Adrenal glands"</code>, <code>"Blood"</code>, <code>"Bone"</code>,
+<code>"Brain"</code>, <code>"Connective tissue"</code>, <code>"Embryo"</code>,
+<code>"Epithelium"</code>, <code>"Eye"</code>, <code>"GI tract"</code>,
+<code>"Heart"</code>, <code>"Immune system"</code>, <code>"Kidney"</code>,
+<code>"Liver"</code>, <code>"Lungs"</code>, <code>"Mammary gland"</code>,
+<code>"Olfactory system"</code>, <code>"Oral cavity"</code>, <code>"Pancreas"</code>,
+<code>"Parathyroid glands"</code>, <code>"Placenta"</code>, <code>"Reproductive"</code>,
+<code>"Skeletal muscle"</code>, <code>"Skin"</code>, <code>"Smooth muscle"</code>,
+<code>"Thymus"</code>, <code>"Thyroid"</code>, <code>"Urinary bladder"</code>,
+<code>"Vasculature"</code>, <code>"Zygote"</code>.</p>
+<p>Example — PBMC / whole blood: <code>tissue = c("Blood", "Immune system")</code>.
+Example — heart: <code>tissue = "Heart"</code>.</p></dd>
 
 
 <dt id="arg-report-html">report_html<a class="anchor" aria-label="anchor" href="#arg-report-html"></a></dt>

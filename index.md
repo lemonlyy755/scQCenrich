@@ -75,8 +75,9 @@ delta T cells.
 If you pass an unrecognised tissue name,
 [`run_qc_pipeline()`](https://lemonlyy755.github.io/scQCenrich/reference/run_qc_pipeline.md)
 warns and annotation falls back to all tissues, which is less specific.
-Use `list_panglao_tissues()` to see the supported PanglaoDB tissue
-names:
+Use
+[`list_panglao_tissues()`](https://lemonlyy755.github.io/scQCenrich/reference/list_panglao_tissues.md)
+to see the supported PanglaoDB tissue names:
 
 ``` r
 list_panglao_tissues()

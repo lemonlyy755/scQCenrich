@@ -114,9 +114,9 @@
 <h2 id="annotation-tissue-selection">Annotation tissue selection<a class="anchor" aria-label="anchor" href="#annotation-tissue-selection"></a>
 </h2>
 <p>When you use <code>annot_method = "marker_score"</code>, setting <code>tissue</code> correctly is important for specific PanglaoDB-based cell labels. On PBMC-like immune data, broad or missing tissue selection can blur closely related populations such as monocytes vs dendritic cells or NK cells vs gamma delta T cells.</p>
-<p>If you pass an unrecognised tissue name, <code><a href="reference/run_qc_pipeline.html">run_qc_pipeline()</a></code> warns and annotation falls back to all tissues, which is less specific. Use <code>list_panglao_tissues()</code> to see the supported PanglaoDB tissue names:</p>
+<p>If you pass an unrecognised tissue name, <code><a href="reference/run_qc_pipeline.html">run_qc_pipeline()</a></code> warns and annotation falls back to all tissues, which is less specific. Use <code><a href="reference/list_panglao_tissues.html">list_panglao_tissues()</a></code> to see the supported PanglaoDB tissue names:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">list_panglao_tissues</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/list_panglao_tissues.html">list_panglao_tissues</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Examples:</p>
 <ul>
 <li>PBMC / whole blood: <code>tissue = c("Blood", "Immune system")</code>
