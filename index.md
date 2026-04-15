@@ -134,8 +134,8 @@ saveRDS(bm,"testloom.rds")
 
 ### Using the Toy Dataset
 
-`scQCenrich` comes bundled with a small toy dataset (`toy_seu`) that you
-can use to immediately test out the pipeline:
+`scQCenrich` comes bundled with a small PBMC-derived toy dataset
+(`toy_seu`) that you can use to immediately test out the pipeline:
 
 ``` r
 library(scQCenrich)
@@ -148,6 +148,7 @@ print(toy_seu)
 res_toy <- run_qc_pipeline(
   obj         = toy_seu,
   species     = "human",
+  tissue      = c("Blood", "Immune system"),
   method      = "gmm",
   qc_strength = "auto",
   report_file = "qc_outputs/toy_qc_report.html"

@@ -1,6 +1,6 @@
 # toy_seu
 
-A small example Seurat object used in examples and tests.
+A benchmark-derived PBMC Seurat object used in examples and tests.
 
 ## Usage
 
@@ -10,8 +10,10 @@ data(toy_seu)
 
 ## Format
 
-A `Seurat` object with minimal counts and metadata.
+A `Seurat` object with 500 cells, 12,884 RNA features, and minimal
+metadata including `cell_type`.
 
 ## Source
 
-Generated in package development for demos.
+Derived from `benchmarking/qc_pbmc/pbmc_annotated.rds` during package
+development.

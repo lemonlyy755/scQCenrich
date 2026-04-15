@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">scQCenrich</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9004</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -168,7 +168,7 @@
 <div class="section level3">
 <h3 id="using-the-toy-dataset">Using the Toy Dataset<a class="anchor" aria-label="anchor" href="#using-the-toy-dataset"></a>
 </h3>
-<p><code>scQCenrich</code> comes bundled with a small toy dataset (<code>toy_seu</code>) that you can use to immediately test out the pipeline:</p>
+<p><code>scQCenrich</code> comes bundled with a small PBMC-derived toy dataset (<code>toy_seu</code>) that you can use to immediately test out the pipeline:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lemonlyy755.github.io/scQCenrich/">scQCenrich</a></span><span class="op">)</span></span>
 <span></span>
@@ -180,6 +180,7 @@
 <span><span class="va">res_toy</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/run_qc_pipeline.html">run_qc_pipeline</a></span><span class="op">(</span></span>
 <span>  obj         <span class="op">=</span> <span class="va">toy_seu</span>,</span>
 <span>  species     <span class="op">=</span> <span class="st">"human"</span>,</span>
+<span>  tissue      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Blood"</span>, <span class="st">"Immune system"</span><span class="op">)</span>,</span>
 <span>  method      <span class="op">=</span> <span class="st">"gmm"</span>,</span>
 <span>  qc_strength <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  report_file <span class="op">=</span> <span class="st">"qc_outputs/toy_qc_report.html"</span></span>
