@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   QC_with_scQCenrich: QC_with_scQCenrich.html
-last_built: 2026-03-19T16:01Z
+last_built: 2026-04-15T02:35Z
 urls:
   reference: https://lemonlyy755.github.io/scQCenrich/reference
   article: https://lemonlyy755.github.io/scQCenrich/articles

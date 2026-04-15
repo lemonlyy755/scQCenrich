@@ -9,7 +9,9 @@ Seurat metrics and optional spliced/unspliced ratios from droplet data.
 scQCenrich has the option to automatically handles doublets, performs
 cell-type auto-annotation, and uniquely emphasizes the rescue of
 biologically meaningful, cohesive clusters that may otherwise be
-incorrectly flagged as ‘low quality’ by basic filters. \## Installation
+incorrectly flagged as ‘low quality’ by basic filters.
+
+## Installation
 
 You can install the development version of scQCenrich from
 [GitHub](https://github.com/) with:
@@ -37,8 +39,9 @@ browseVignettes("scQCenrich")
 
 ## Example use
 
-This is a basic usage example Note: SeuratWrappers does not work in
-windows os.
+This is a basic usage example
+
+Note: SeuratWrappers does not work in windows os.
 
 ``` r
 library(scQCenrich)
@@ -49,21 +52,47 @@ seurat_std <- CreateSeuratObject(counts =  Read10X("your filtered count folder p
 seurat_sp <- as.Seurat(ReadVelocity(file = 'your velocyto loom file.loom')) 
 
 res <- run_qc_pipeline(
-  obj          = seurat_std,                 
-  species      = "mouse", #edit your species mouse or human
-  spliced_obj        = seurat_sp,
-  unspliced_obj      = seurat_sp,
-  report_file  = "qc_outputs/qc_report.html"
+  obj            = seurat_std,
+  species        = "human", # edit your species: mouse or human
+  annot_method   = "marker_score",
+  tissue         = c("Blood", "Immune system"), # replace with the tissue(s) matching your dataset
+  spliced_obj    = seurat_sp,
+  unspliced_obj  = seurat_sp,
+  report_file    = "qc_outputs/qc_report.html"
 )
 
 browseURL(res$report)
 ```
 
+## Annotation tissue selection
+
+When you use `annot_method = "marker_score"`, setting `tissue` correctly
+is important for specific PanglaoDB-based cell labels. On PBMC-like
+immune data, broad or missing tissue selection can blur closely related
+populations such as monocytes vs dendritic cells or NK cells vs gamma
+delta T cells.
+
+If you pass an unrecognised tissue name,
+[`run_qc_pipeline()`](https://lemonlyy755.github.io/scQCenrich/reference/run_qc_pipeline.md)
+warns and annotation falls back to all tissues, which is less specific.
+Use `list_panglao_tissues()` to see the supported PanglaoDB tissue
+names:
+
+``` r
+list_panglao_tissues()
+```
+
+Examples:
+
+- PBMC / whole blood: `tissue = c("Blood", "Immune system")`
+- Cardiac data: `tissue = "Heart"`
+
 ## Loom Example
 
 This is a basic example to convert velocyto loom file into seurat obj
-rds to be used in windows OS setting: Note: this step cannot be done in
-windows.
+rds to be used in windows OS setting:
+
+Note: this step cannot be done in windows.
 
 ``` r
 library(Seurat)
