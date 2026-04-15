@@ -63,4 +63,5 @@ Remotes:
     github::YuLab-SMU/ggtree
 VignetteBuilder: knitr
 LazyData: true
+LazyDataCompression: xz
 URL: https://lemonlyy755.github.io/scQCenrich/
