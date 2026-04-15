@@ -22,8 +22,27 @@ utils::globalVariables(c("UMAP_1", "UMAP_2", "qc_status", "is_doublet", "group",
 #' @param annot_method 'SingleR','marker_score','none'
 #' @param marker_source 'panglao', 'internal', 'custom'
 #'   (only used when annot_method='marker_score')
-#' @param tissue Character vector of target organs/tissues, e.g.
-#'   c("Liver", "Kidney").
+#' @param tissue Character vector of organ/tissue names used to subset the
+#'   PanglaoDB marker database before cell-type scoring
+#'   (\code{annot_method = "marker_score"} only).  Supplying the correct
+#'   tissue **greatly improves annotation accuracy** by restricting signatures
+#'   to cell types that are actually present in your sample.
+#'   Pass \code{NULL} (default) to use all tissues.
+#'
+#'   \strong{Supported tissue names} (case-insensitive, exact match preferred):  
+#'   \code{"Adrenal glands"}, \code{"Blood"}, \code{"Bone"},
+#'   \code{"Brain"}, \code{"Connective tissue"}, \code{"Embryo"},
+#'   \code{"Epithelium"}, \code{"Eye"}, \code{"GI tract"},
+#'   \code{"Heart"}, \code{"Immune system"}, \code{"Kidney"},
+#'   \code{"Liver"}, \code{"Lungs"}, \code{"Mammary gland"},
+#'   \code{"Olfactory system"}, \code{"Oral cavity"}, \code{"Pancreas"},
+#'   \code{"Parathyroid glands"}, \code{"Placenta"}, \code{"Reproductive"},
+#'   \code{"Skeletal muscle"}, \code{"Skin"}, \code{"Smooth muscle"},
+#'   \code{"Thymus"}, \code{"Thyroid"}, \code{"Urinary bladder"},
+#'   \code{"Vasculature"}, \code{"Zygote"}.
+#'
+#'   Example — PBMC / whole blood: \code{tissue = c("Blood", "Immune system")}.
+#'   Example — heart: \code{tissue = "Heart"}.
 #' @param panglao_file Optional path to Panglao TSV (defaults to
 #'   inst/extdata if present)
 #' @param canonical_only,ui_max,min_genes Panglao signature filtering knobs
@@ -112,6 +131,34 @@ run_qc_pipeline <- function(obj,
     c("sctype", "marker_score", "singleR", "SingleR", "none")
   )
   marker_source <- match.arg(marker_source)
+
+  # --- tissue input validation (marker_score + panglao only) ---------------
+  .PANGLAO_TISSUES <- c(
+    "Adrenal glands", "Blood", "Bone", "Brain", "Connective tissue",
+    "Embryo", "Epithelium", "Eye", "GI tract", "Heart", "Immune system",
+    "Kidney", "Liver", "Lungs", "Mammary gland", "Olfactory system",
+    "Oral cavity", "Pancreas", "Parathyroid glands", "Placenta",
+    "Reproductive", "Skeletal muscle", "Skin", "Smooth muscle",
+    "Thymus", "Thyroid", "Urinary bladder", "Vasculature", "Zygote"
+  )
+  if (!is.null(tissue) && length(tissue) &&
+      tolower(annot_method) == "marker_score" &&
+      marker_source == "panglao") {
+    unknown_tissues <- tissue[
+      !tolower(trimws(tissue)) %in% tolower(.PANGLAO_TISSUES)
+    ]
+    if (length(unknown_tissues)) {
+      warning(
+        "run_qc_pipeline(): unrecognised tissue name(s): ",
+        paste0('"', unknown_tissues, '"', collapse = ", "), "\n",
+        "  The PanglaoDB tissue filter will be skipped for these names and ",
+        "annotation may be less accurate.\n",
+        "  Supported tissues (case-insensitive):\n",
+        "    ", paste(.PANGLAO_TISSUES, collapse = ", "),
+        call. = FALSE
+      )
+    }
+  }
   am <- tolower(annot_method)
 
 

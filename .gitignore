@@ -10,7 +10,8 @@ inst/doc
 dev.R
 package_combined.txt
 /Meta/
-/benchmarking/
+/benchmarking/*
+!/benchmarking/BENCHMARK_RESULTS.md
 .lintr
 scQCenrich.code-workspace
 /test_qc_out/

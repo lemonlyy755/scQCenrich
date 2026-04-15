@@ -677,12 +677,12 @@ validation_plots_post_annotation <- function(
       })
 
       # Universe & SYMBOL->ENTREZ mapping (Seurat v5-safe: use layer, never slot)
-      .dbg("[validation_plots] building universe symbols from assay=", assay)
+      .dbg("[validation_plots] building universe symbols from assay=%s", assay)
 
       mat_u <- tryCatch(
         .get_assay_data(obj, assay = assay, layer_or_slot = "data"),
         error = function(e) {
-          .dbg("[validation_plots] data layer missing/error: ", conditionMessage(e))
+          .dbg("[validation_plots] data layer missing/error: %s", conditionMessage(e))
           NULL
         }
       )
@@ -693,7 +693,7 @@ validation_plots_post_annotation <- function(
       }
 
       all_symbols <- rownames(mat_u)
-      .dbg("[validation_plots] universe genes n=", length(all_symbols))
+      .dbg("[validation_plots] universe genes n=%d", length(all_symbols))
 
 
       sym2ent_all <- tryCatch(
@@ -740,7 +740,7 @@ validation_plots_post_annotation <- function(
             Count = 0L,
             stringsAsFactors = FALSE
           )
-          if (exists(".dbg", mode="function")) .dbg(sprintf("[GO/cluster] C%s: no markers -> placeholder", cl))
+          if (exists(".dbg", mode="function")) .dbg("[GO/cluster] C%s: no markers -> placeholder", cl)
           next
         }
 
@@ -753,8 +753,8 @@ validation_plots_post_annotation <- function(
           }
         }
 
-        if (exists(".dbg", mode="function")) .dbg(sprintf("[GO/cluster] C%s: top=%d -> mapped=%d | universe=%d",
-                                                          cl, length(genes), length(g_entrez), length(universe_entrez)))
+        if (exists(".dbg", mode="function")) .dbg("[GO/cluster] C%s: top=%d -> mapped=%d | universe=%d",
+                                                          cl, length(genes), length(g_entrez), length(universe_entrez))
 
         if (!length(g_entrez) || length(universe_entrez) < 100) {
           go_rows[[cl]] <- data.frame(
@@ -765,7 +765,7 @@ validation_plots_post_annotation <- function(
             Count = 0L,
             stringsAsFactors = FALSE
           )
-          if (exists(".dbg", mode="function")) .dbg(sprintf("[GO/cluster] C%s: skipped (too few IDs or small universe)", cl))
+          if (exists(".dbg", mode="function")) .dbg("[GO/cluster] C%s: skipped (too few IDs or small universe)", cl)
           next
         }
 
@@ -781,7 +781,7 @@ validation_plots_post_annotation <- function(
               readable      = TRUE
             )
           ),
-          error = function(e) { if (exists(".dbg", mode="function")) .dbg(sprintf("[GO/cluster] C%s: enrichGO ERROR: %s", cl, e$message)); NULL }
+          error = function(e) { if (exists(".dbg", mode="function")) .dbg("[GO/cluster] C%s: enrichGO ERROR: %s", cl, e$message); NULL }
         )
 
         if (is.null(ego) || is.null(ego@result) || nrow(ego@result) == 0) {
@@ -793,7 +793,7 @@ validation_plots_post_annotation <- function(
             Count = 0L,
             stringsAsFactors = FALSE
           )
-          if (exists(".dbg", mode="function")) .dbg(sprintf("[GO/cluster] C%s: no terms", cl))
+          if (exists(".dbg", mode="function")) .dbg("[GO/cluster] C%s: no terms", cl)
         } else {
           df <- as.data.frame(ego)
           df <- df[order(df$p.adjust, -df$Count), , drop = FALSE]

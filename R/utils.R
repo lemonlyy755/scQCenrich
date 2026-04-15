@@ -3,11 +3,7 @@
 
 `%||%` <- function(x, y) if (is.null(x)) y else x # small local helper
 
-.dbg <- function(...) {
-  if (isTRUE(getOption("scQCenrich.debug", FALSE))) {
-    message("[scQCenrich-debug] ", paste(..., collapse = ""))
-  }
-}
+
 
 .mad_thresholds <- function(x, k = 3) {
   m <- stats::median(x, na.rm = TRUE)
@@ -22,41 +18,26 @@
 
 .to_dgC <- function(x, name = "unknown") {
   if (inherits(x, "dgCMatrix")) {
-    .dbg(name, ": already dgCMatrix (", paste(dim(x), collapse = "x"), ")")
+    .dbg("%s: already dgCMatrix (%s)", name, paste(dim(x), collapse = "x"))
     return(x)
   }
   out <- suppressWarnings(try(methods::as(x, "dgCMatrix"), silent = TRUE))
   if (!inherits(out, "try-error") && inherits(out, "dgCMatrix")) {
-    .dbg(
-      name,
-      ": coerced via methods::as -> dgCMatrix (",
-      paste(dim(out), collapse = "x"),
-      ")"
-    )
+    .dbg("%s: coerced via methods::as -> dgCMatrix (%s)", name, paste(dim(out), collapse = "x"))
     return(out)
   }
   m <- suppressWarnings(try(as.matrix(x), silent = TRUE))
   if (!inherits(m, "try-error") && is.matrix(m)) {
     out <- Matrix::Matrix(m, sparse = TRUE)
     out <- methods::as(out, "dgCMatrix")
-    .dbg(
-      name,
-      ": coerced via as.matrix -> sparse dgCMatrix (",
-      paste(dim(out), collapse = "x"),
-      ")"
-    )
+    .dbg("%s: coerced via as.matrix -> sparse dgCMatrix (%s)", name, paste(dim(out), collapse = "x"))
     return(out)
   }
   if (is.vector(x) && is.atomic(x)) {
     m <- matrix(x, ncol = 1)
     out <- Matrix::Matrix(m, sparse = TRUE)
     out <- methods::as(out, "dgCMatrix")
-    .dbg(
-      name,
-      ": vector->matrix -> dgCMatrix (",
-      paste(dim(out), collapse = "x"),
-      ")"
-    )
+    .dbg("%s: vector->matrix -> dgCMatrix (%s)", name, paste(dim(out), collapse = "x"))
     return(out)
   }
   stop(
@@ -88,7 +69,7 @@
 
 # v5/v4-safe getter that ALWAYS returns a dgCMatrix
 .get_assay_data <- function(obj, assay, layer_or_slot) {
-  .dbg("GetAssayData(", assay, " : ", layer_or_slot, ")")
+  .dbg("GetAssayData(%s : %s)", assay, layer_or_slot)
 
   # 1) Preferred v5: explicit layer on Seurat object
   out <- suppressWarnings(
@@ -112,7 +93,7 @@
     if (isS4(ao)) {
       sn <- tryCatch(methods::slotNames(ao), error = function(e) character(0))
       if (length(sn) && layer_or_slot %in% sn) {
-        .dbg("Legacy slot direct read: ", assay, "@", layer_or_slot)
+        .dbg("Legacy slot direct read: %s@%s", assay, layer_or_slot)
         out2 <- tryCatch(methods::slot(ao, layer_or_slot), error = function(e) NULL)
         if (!is.null(out2)) {
           return(.to_dgC(out2, paste0(assay, ":", layer_or_slot, " [legacy-slot-direct]")))
@@ -199,7 +180,7 @@
     return(m)
   }
   libs <- Matrix::colSums(m)
-  .dbg(sprintf("log_cpm: lib length=%d", length(libs)))
+  .dbg("log_cpm: lib length=%d", length(libs))
   libs[!is.finite(libs)] <- 0
 
   # preallocate zeros; keep dimnames

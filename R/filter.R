@@ -353,6 +353,8 @@ flagLowQuality <- function(
       message("[rescue] skipped (no eligible clusters or empty rescue table).")
     }
 
+    # snapshot pre-rescue remove count for borderline cap calculation
+    .n_remove_pre_rescue <- sum(det$qc_status == "remove", na.rm = TRUE)
 
     ix <- which(det$rescue_flag %in% TRUE &
       det$qc_status == "remove" &
@@ -393,6 +395,89 @@ flagLowQuality <- function(
           file.path(outdir, "extreme_mito_forced_removals.csv"),
           row.names = FALSE
         )
+      }
+    }
+  }
+
+  # ---- BORDERLINE CAP: borderline cells ≤ 20% of removed cells -------------
+  # Use the pre-rescue remove count as denominator so the cap works even when
+  # rescue drives the final remove count to zero.
+  border_cap_frac <- getOption("scQCenrich.max_borderline_frac", 0.20)
+  n_remove_final <- sum(det$qc_status == "remove", na.rm = TRUE)
+  n_remove_basis <- if (exists(".n_remove_pre_rescue", inherits = FALSE)) {
+    max(.n_remove_pre_rescue, n_remove_final)
+  } else {
+    n_remove_final
+  }
+  n_border <- sum(det$qc_status == "borderline", na.rm = TRUE)
+  max_border <- ceiling(border_cap_frac * n_remove_basis)
+
+  if (n_border > max_border && n_remove_basis > 0L) {
+    border_idx <- which(det$qc_status == "borderline")
+    # Sort by severity (qc_score): lowest severity first → demote those to "keep"
+    sev <- if ("qc_score" %in% colnames(det)) {
+      det$qc_score[border_idx]
+    } else {
+      rep(0, length(border_idx))
+    }
+    sev[!is.finite(sev)] <- 0
+    ord <- order(sev, decreasing = FALSE) # least severe first
+    n_demote <- n_border - max_border
+    demote_idx <- border_idx[ord[seq_len(n_demote)]]
+
+    det$qc_status[demote_idx] <- factor("keep", levels = c("keep", "borderline", "remove"))
+    add <- "borderline_cap_demoted"
+    det$reason[demote_idx] <- ifelse(nzchar(det$reason[demote_idx]),
+      paste0(det$reason[demote_idx], "; ", add), add
+    )
+
+    if (isTRUE(getOption("scQCenrich.debug", FALSE))) {
+      message(sprintf(
+        "[flagLowQuality] borderline cap: had %d borderline vs %d basis_removed (max=%d); demoted %d to keep",
+        n_border, n_remove_basis, max_border, n_demote
+      ))
+    }
+  }
+
+  # ---- MINIMUM REMOVAL FLOOR: always remove at least 2% of total cells ------
+  # This fires last so that it never interferes with the detection, scoring,
+  # auto-scater block, extreme-mito enforcement, or borderline cap.  It simply
+  # promotes the worst-scoring non-remove cells (borderline first, then keep)
+  # until the 2% minimum is satisfied.
+  min_removal_frac <- getOption("scQCenrich.min_removal_frac", 0.02)
+  n_total <- nrow(det)
+  min_remove <- ceiling(min_removal_frac * n_total)
+  n_remove_floor_check <- sum(det$qc_status == "remove", na.rm = TRUE)
+
+  if (n_remove_floor_check < min_remove && min_remove > 0L) {
+    need_more <- min_remove - n_remove_floor_check
+    # Candidates: all non-remove cells sorted worst-to-best by qc_score
+    cand_idx <- which(det$qc_status != "remove")
+    if (length(cand_idx) > 0L) {
+      sev_floor <- if ("qc_score" %in% colnames(det)) {
+        det$qc_score[cand_idx]
+      } else {
+        rep(0, length(cand_idx))
+      }
+      sev_floor[!is.finite(sev_floor)] <- 0
+      # Prioritise borderline over keep within same score tier
+      tier <- ifelse(as.character(det$qc_status[cand_idx]) == "borderline", 1L, 0L)
+      ord_floor <- order(tier, sev_floor, decreasing = TRUE)
+      take_floor <- cand_idx[ord_floor[seq_len(min(need_more, length(cand_idx)))]]
+      det$qc_status[take_floor] <- factor("remove", levels = c("keep", "borderline", "remove"))
+      add_floor <- "relative_low_quality"
+      det$reason[take_floor] <- ifelse(nzchar(det$reason[take_floor]),
+        paste0(det$reason[take_floor], "; ", add_floor), add_floor
+      )
+      if (isTRUE(getOption("scQCenrich.debug", FALSE))) {
+        message(sprintf(
+          "[flagLowQuality] min_removal_floor: had %d removed (%.1f%%), need %d (%.1f%%); promoted %d cells",
+          n_remove_floor_check,
+          100 * n_remove_floor_check / n_total,
+          min_remove,
+          min_removal_frac * 100,
+          length(take_floor)
+        ))
       }
     }
   }

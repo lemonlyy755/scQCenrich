@@ -53,21 +53,48 @@ panglao_signatures <- function(
     df <- df[ is.na(ui) | ui <= ui_max, , drop = FALSE]
   }
 
-  # --- NEW: tissue/organ filter (vector-friendly; case-insensitive; partial match fallback)
+  # --- tissue/organ filter (vector-friendly; case-insensitive; partial match fallback)
+  .PANGLAO_VALID_TISSUES <- c(
+    "Adrenal glands", "Blood", "Bone", "Brain", "Connective tissue",
+    "Embryo", "Epithelium", "Eye", "GI tract", "Heart", "Immune system",
+    "Kidney", "Liver", "Lungs", "Mammary gland", "Olfactory system",
+    "Oral cavity", "Pancreas", "Parathyroid glands", "Placenta",
+    "Reproductive", "Skeletal muscle", "Skin", "Smooth muscle",
+    "Thymus", "Thyroid", "Urinary bladder", "Vasculature", "Zygote"
+  )
   if (!is.null(tissue) && length(tissue) && !is.na(col_organ) && col_organ %in% names(df)) {
-    orgv <- as.character(df[[col_organ]])
+    orgv    <- as.character(df[[col_organ]])
     n_before <- nrow(df)
     q <- tolower(trimws(as.character(tissue)))
+
+    # 1st pass: exact match (case-insensitive)
     keep <- tolower(trimws(orgv)) %in% q
     if (!any(keep, na.rm = TRUE)) {
-      pat <- paste0(gsub("\\s+","\\\\s*", q), collapse = "|")  # partial match across any provided tissues
+      # 2nd pass: partial / regex match
+      pat  <- paste0(gsub("\\s+", "\\\\s*", q), collapse = "|")
       keep <- grepl(pat, tolower(orgv))
     }
     if (any(keep, na.rm = TRUE)) {
       df <- df[keep %in% TRUE, , drop = FALSE]
       .say("[Panglao] tissue filter kept %d/%d rows", nrow(df), n_before)
     } else {
-      .say("[Panglao] tissue filter matched 0 rows; skipping tissue filter.")
+      # No match at all — warn with full list of valid names
+      unmatched <- tissue[
+        !tolower(trimws(tissue)) %in% tolower(.PANGLAO_VALID_TISSUES)
+      ]
+      warning(
+        "panglao_signatures(): tissue filter matched 0 rows for: ",
+        paste0('"', tissue, '"', collapse = ", "), "\n",
+        "  Annotation will use ALL tissues (less specific).\n",
+        if (length(unmatched))
+          paste0("  Unrecognised name(s): ",
+                 paste0('"', unmatched, '"', collapse = ", "), "\n")
+        else "",
+        "  Supported tissue names:\n",
+        "    ", paste(.PANGLAO_VALID_TISSUES, collapse = ", "),
+        call. = FALSE
+      )
+      .say("[Panglao] tissue filter matched 0 rows; falling back to all tissues.")
     }
   }
 
@@ -82,6 +109,33 @@ panglao_signatures <- function(
   sig
 }
 
+
+#' List the tissue names supported by the PanglaoDB marker database
+#'
+#' Prints (and invisibly returns) the character vector of tissue names that can
+#' be passed to the \code{tissue} argument of \code{\link{run_qc_pipeline}} or
+#' \code{panglao_signatures}.  Supplying the correct tissue name(s) narrows
+#' the signature lookup to cell types relevant to your sample and substantially
+#' improves annotation accuracy.
+#'
+#' @return A character vector of supported tissue names (invisibly).
+#' @examples
+#' list_panglao_tissues()
+#' @export
+list_panglao_tissues <- function() {
+  tissues <- c(
+    "Adrenal glands", "Blood", "Bone", "Brain", "Connective tissue",
+    "Embryo", "Epithelium", "Eye", "GI tract", "Heart", "Immune system",
+    "Kidney", "Liver", "Lungs", "Mammary gland", "Olfactory system",
+    "Oral cavity", "Pancreas", "Parathyroid glands", "Placenta",
+    "Reproductive", "Skeletal muscle", "Skin", "Smooth muscle",
+    "Thymus", "Thyroid", "Urinary bladder", "Vasculature", "Zygote"
+  )
+  cat("Supported PanglaoDB tissue names (pass to `tissue` argument):\n")
+  cat(paste0("  ", seq_along(tissues), ". ", tissues, "\n"), sep = "")
+  cat("\nExample: run_qc_pipeline(..., tissue = c(\"Blood\", \"Immune system\"))\n")
+  invisible(tissues)
+}
 
 
 panglao_signatures_debug <- function(
