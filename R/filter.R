@@ -399,10 +399,10 @@ flagLowQuality <- function(
     }
   }
 
-  # ---- BORDERLINE CAP: borderline cells ≤ 20% of removed cells -------------
+  # ---- BORDERLINE CAP: borderline cells ≤ 25% of removed cells -------------
   # Use the pre-rescue remove count as denominator so the cap works even when
   # rescue drives the final remove count to zero.
-  border_cap_frac <- getOption("scQCenrich.max_borderline_frac", 0.20)
+  border_cap_frac <- getOption("scQCenrich.max_borderline_frac", 0.25)
   n_remove_final <- sum(det$qc_status == "remove", na.rm = TRUE)
   n_remove_basis <- if (exists(".n_remove_pre_rescue", inherits = FALSE)) {
     max(.n_remove_pre_rescue, n_remove_final)
