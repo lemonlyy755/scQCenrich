@@ -17,6 +17,11 @@ qc_diagnostic_panel <- function(
   p_qc <- ggplot2::ggplot(umap_df, ggplot2::aes(UMAP_1, UMAP_2, color = qc_status)) +
     ggplot2::geom_point(size = 0.3, alpha = 0.6) +
     ggplot2::theme_classic() +
+    ggplot2::scale_color_manual(
+      values = c("keep" = "#A0A0A0", "borderline" = "#619CFF", "remove" = "#ff1100"),
+      breaks = c("keep", "borderline", "remove"),
+      na.translate = TRUE
+    ) +
     ggplot2::labs(title = "UMAP (colored by QC status)") +
     ggplot2::guides(color = ggplot2::guide_legend(override.aes = list(size = 3, alpha = 1)))
   f_qc <- file.path(save_dir, sprintf("%s_umap_qc.png", prefix))

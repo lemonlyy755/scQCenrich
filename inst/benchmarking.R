@@ -286,14 +286,11 @@ baseline_miQC <- function(seu, mito_patterns = NULL, debug = TRUE) {
   }
 
   # Fit miQC (linear → spline → 1D)
-  set.seed(1234)
   mmod <- try(miQC::mixtureModel(sce, model_type = "linear"), silent = TRUE)
   if (inherits(mmod, "try-error")) {
-    set.seed(5678)
     mmod <- try(miQC::mixtureModel(sce, model_type = "spline"), silent = TRUE)
   }
   if (inherits(mmod, "try-error")) {
-    set.seed(91011)
     mmod <- try(miQC::mixtureModel(sce, model_type = "one_dimensional"), silent = TRUE)
   }
   if (inherits(mmod, "try-error")) {
@@ -475,7 +472,7 @@ res <- run_qc_pipeline(
   report_html = T,
   report_file = "qc_outputs/qc_report.html",
   debug = TRUE,
-  annot_method = "none",
+  annot_method = "marker_score",
   tissue = organ,
   marker_method = "findmarkers",
   doublets = "none",
