@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">scQCenrich</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9005</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9006</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,7 +49,6 @@
 <span>  celltype_col <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sample_col <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rescue_mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"moderate"</span>, <span class="st">"lenient"</span>, <span class="st">"strict"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
-<span>  cancer_bypass <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  min_cluster_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  doublet_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"remove"</span>, <span class="st">"borderline"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  doublet_col <span class="op">=</span> <span class="st">"is_doublet"</span>,</span>
@@ -93,12 +92,6 @@ column 'is_doublet' (as added by calcQCmetrics), it will be honored.</p></dd>
 
 <dt id="arg-rescue-mode">rescue_mode<a class="anchor" aria-label="anchor" href="#arg-rescue-mode"></a></dt>
 <dd><p>"moderate","lenient","strict", or "none"</p></dd>
-
-
-<dt id="arg-cancer-bypass">cancer_bypass<a class="anchor" aria-label="anchor" href="#arg-cancer-bypass"></a></dt>
-<dd><p>Logical. If TRUE, clusters with healthy splicing profiles but high
-removal rates are exempt from the removal-fraction penalty, allowing potential
-cancer cell populations to be rescued. Default FALSE.</p></dd>
 
 
 <dt id="arg-min-cluster-size">min_cluster_size<a class="anchor" aria-label="anchor" href="#arg-min-cluster-size"></a></dt>

@@ -12,7 +12,6 @@ rescue_by_coherence(
   celltype_col = "auto_celltype",
   min_cluster_size = 50,
   rescue_mode = c("none", "lenient", "moderate", "strict"),
-  cancer_bypass = FALSE,
   coherence_min = NULL,
   gates_min_pass = NULL
 )
@@ -44,12 +43,6 @@ rescue_by_coherence(
 - rescue_mode:
 
   "moderate" (default), "lenient", "strict", or "none"
-
-- cancer_bypass:
-
-  Logical. If TRUE, clusters with healthy splicing profiles but high
-  removal rates are exempt from the removal-fraction penalty, allowing
-  potential cancer cell populations to be rescued. Default FALSE.
 
 - coherence_min:
 

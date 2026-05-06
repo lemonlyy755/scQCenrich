@@ -46,7 +46,6 @@ run_qc_pipeline(
   unknown_min_top = 0.01,
   qc_strength = c("auto", "default", "lenient", "strict"),
   rescue_mode = c("moderate", "lenient", "strict", "none"),
-  cancer_bypass = FALSE,
   enrichment_plots = TRUE
 )
 ```
@@ -197,12 +196,6 @@ run_qc_pipeline(
 
   One of `c("moderate","lenient","strict","none")`; controls how
   aggressively borderline cells are rescued. Default `"moderate"`.
-
-- cancer_bypass:
-
-  Logical. If TRUE, clusters with healthy splicing profiles but high
-  removal rates are exempt from the removal-fraction penalty (useful for
-  cancer datasets). Default `FALSE`.
 
 - enrichment_plots:
 
