@@ -59,9 +59,6 @@ utils::globalVariables(c("UMAP_1", "UMAP_2", "qc_status", "is_doublet", "group",
 #'   passed to \code{flagLowQuality()}.
 #' @param rescue_mode One of \code{c("moderate","lenient","strict","none")};
 #'   controls how aggressively borderline cells are rescued. Default \code{"moderate"}.
-#' @param cancer_bypass Logical. If TRUE, clusters with healthy splicing profiles but high
-#'   removal rates are exempt from the removal-fraction penalty (useful for cancer datasets).
-#'   Default \code{FALSE}.
 #' @param enrichment_plots logical. If TRUE, run GO/KEGG enrichment plots;
 #'   if FALSE, skip. Default: TRUE.
 #' @return A list with at least: \code{$obj} (QC-kept), \code{$metrics},
@@ -116,7 +113,6 @@ run_qc_pipeline <- function(obj,
                               "auto", "default", "lenient", "strict"
                             ),
                             rescue_mode = c("moderate", "lenient", "strict", "none"),
-                            cancer_bypass = FALSE,
                             enrichment_plots = TRUE) {
   species <- match.arg(species)
   method <- match.arg(method)
@@ -366,7 +362,6 @@ run_qc_pipeline <- function(obj,
     },
     sample_col = sample_col,
     rescue_mode = rescue_mode,
-    cancer_bypass = cancer_bypass,
     qc_strength = qc_strength,
     min_cluster_size = NULL,
     save_dir = save_dir,

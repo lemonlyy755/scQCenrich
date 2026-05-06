@@ -8,9 +8,6 @@
 #' @param celltype_col optional meta column for rescue label coherence
 #' @param sample_col optional sample column (passed to detector; may be NULL)
 #' @param rescue_mode "moderate","lenient","strict", or "none"
-#' @param cancer_bypass Logical. If TRUE, clusters with healthy splicing profiles but high
-#'   removal rates are exempt from the removal-fraction penalty, allowing potential
-#'   cancer cell populations to be rescued. Default FALSE.
 #' @param min_cluster_size minimum cluster size to consider for rescue; NULL = adaptive (~0.5% or >=10)
 #' @param doublet_action what to do with predicted doublets in `metrics$is_doublet`:
 #'   "remove" (default), "borderline", or "none"
@@ -28,7 +25,6 @@ flagLowQuality <- function(
   celltype_col = NULL,
   sample_col = NULL,
   rescue_mode = c("moderate", "lenient", "strict", "none"),
-  cancer_bypass = FALSE,
   min_cluster_size = NULL, # NULL -> adaptive
   doublet_action = c("remove", "borderline", "none"),
   doublet_col = "is_doublet",
@@ -304,8 +300,7 @@ flagLowQuality <- function(
         obj, metrics, det,
         celltype_col = celltype_col,
         min_cluster_size = mcs,
-        rescue_mode = rescue_mode,
-        cancer_bypass = cancer_bypass
+        rescue_mode = rescue_mode
       ),
       error = function(e) NULL
     )

@@ -1,6 +1,6 @@
 Package: scQCenrich
 Title: Multi-Metric Quality Control for Single-Cell RNA-Seq
-Version: 0.0.0.9005
+Version: 0.0.0.9006
 Authors@R: 
     person("Yuanyuan", "Liu", , "18211007107@163.com", role = c("aut", "cre"))
 Description: Quality control, doublet handling, cell-type auto-annotation, optional spliced/unspliced metrics, rescue of coherent clusters, and a presentable HTML QC report for Seurat v5 objects.

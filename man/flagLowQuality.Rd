@@ -13,7 +13,6 @@ flagLowQuality(
   celltype_col = NULL,
   sample_col = NULL,
   rescue_mode = c("moderate", "lenient", "strict", "none"),
-  cancer_bypass = FALSE,
   min_cluster_size = NULL,
   doublet_action = c("remove", "borderline", "none"),
   doublet_col = "is_doublet",
@@ -38,10 +37,6 @@ column 'is_doublet' (as added by calcQCmetrics), it will be honored.}
 \item{sample_col}{optional sample column (passed to detector; may be NULL)}
 
 \item{rescue_mode}{"moderate","lenient","strict", or "none"}
-
-\item{cancer_bypass}{Logical. If TRUE, clusters with healthy splicing profiles but high
-removal rates are exempt from the removal-fraction penalty, allowing potential
-cancer cell populations to be rescued. Default FALSE.}
 
 \item{min_cluster_size}{minimum cluster size to consider for rescue; NULL = adaptive (~0.5\% or >=10)}
 

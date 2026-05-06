@@ -6,9 +6,6 @@
 #' @param celltype_col optional meta column with labels (e.g. 'celltype'); if missing, label-coherence is skipped
 #' @param min_cluster_size minimum cluster size to consider for rescue (default 25)
 #' @param rescue_mode "moderate" (default), "lenient", "strict", or "none"
-#' @param cancer_bypass Logical. If TRUE, clusters with healthy splicing profiles but high
-#'   removal rates are exempt from the removal-fraction penalty, allowing potential
-#'   cancer cell populations to be rescued. Default FALSE.
 #' @param metrics Character vector of metric names to consider.
 #' @param detected Numeric vector of detected gene counts per cell (length = ncol(obj)).
 #' @param coherence_min Minimum coherence score required to rescue (default 0.5).
@@ -20,7 +17,6 @@ rescue_by_coherence <- function(
   celltype_col = "auto_celltype",
   min_cluster_size = 50,
   rescue_mode = c("none", "lenient", "moderate", "strict"),
-  cancer_bypass = FALSE,
   # explicit gates (kept for compatibility, but now only used for debug table)
   coherence_min = NULL, # e.g., 0.60 for moderate
   gates_min_pass = NULL # how many metric gates (mito/feat/stress) must pass
@@ -137,26 +133,14 @@ rescue_by_coherence <- function(
     1 - cm$removed_frac # 0..1, higher = better
   ), na.rm = TRUE)
 
-  # --- CANCER RESCUE LOGIC (Intronic Gating) ---
+  # --- Intronic gating: prevent rescuing clusters consistent with ruptured nuclei.
   cm$pass_intr_healthy <- TRUE # Default pass if no splicing data available
 
   if (!is.null(intr) && is.finite(global_med_intr)) {
-    # 1. Damaged Cell Hard Veto (e.g. Cluster 4 naked nuclei)
     # If the cluster's median intronic ratio is way up in the 0.70+ ruptured nucleus range (1.20x normal median limits)
     intr_max_limit <- getOption("scQCenrich.normal_intronic_max", 0.35)
     ruptured_limit <- max(global_med_intr * 1.20, intr_max_limit * 1.20, 0.65)
     cm$pass_intr_healthy <- is.na(cm$med_intr) | (cm$med_intr < ruptured_limit)
-
-    # 2. Cancer Exemption (e.g. Cluster 6 viable melanoma)
-    # Give clusters explicitly inside the healthy splicing limit an exemption from the `1 - removed_frac` penalty!
-    healthy_cancer_candidates <- cm$pass_intr_healthy & (cm$removed_frac > 0.3)
-    if (cancer_bypass && any(healthy_cancer_candidates)) {
-      # Recalculate their score without the removal penalty drag
-      cm$score[healthy_cancer_candidates] <- rowMeans(cbind(
-        cm$coherence[healthy_cancer_candidates],
-        cm$pass_frac[healthy_cancer_candidates]
-      ), na.rm = TRUE)
-    }
   }
 
   cm$pass_coh <- cm$coherence >= coherence_min # debug column
