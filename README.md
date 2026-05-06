@@ -15,12 +15,12 @@
 
 scQCenrich is an advanced, annotation-aware quality control framework
 for single-cell RNA-seq (scRNA-seq) data. It goes beyond simple static
-thresholds by integrating multi-metric filtering—including standard
+thresholds by integrating multi-metric filtering, including standard
 Seurat metrics and optional spliced/unspliced ratios from droplet data.
-scQCenrich has the option to automatically handles doublets, performs
-cell-type auto-annotation, and uniquely emphasizes the rescue of
-biologically meaningful, cohesive clusters that may otherwise be
-incorrectly flagged as ‘low quality’ by basic filters.
+scQCenrich can automatically handle doublets, perform cell-type
+auto-annotation, and rescue biologically meaningful, cohesive clusters
+that may otherwise be incorrectly flagged as “low quality” by basic
+filters.
 
 ## Installation
 
@@ -28,32 +28,34 @@ You can install the development version of scQCenrich from
 [GitHub](https://github.com/) with:
 
 ``` r
-install.packages("BiocManager")
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+
 remotes::install_github(
   "lemonlyy755/scQCenrich",
-  dependencies = TRUE,
+  dependencies = c("Depends", "Imports", "LinkingTo"),
   repos = BiocManager::repositories()
 )
+```
 
-vignettes:
-install.packages(c("knitr","rmarkdown"))     
-if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+To install with vignettes:
 
+``` r
+install.packages(c("knitr", "rmarkdown"))
 remotes::install_github(
   "lemonlyy755/scQCenrich",
-  dependencies   = TRUE,
+  dependencies = c("Depends", "Imports", "LinkingTo"),
   build_vignettes = TRUE,
-  repos          = BiocManager::repositories()
+  repos = BiocManager::repositories()
 )
 browseVignettes("scQCenrich")
-
 ```
 
 ## Example use
 
 This is a basic usage example
 
-Note: SeuratWrappers does not work in windows os.
+Note: SeuratWrappers does not work on Windows.
 
 ``` r
 library(scQCenrich)
@@ -172,7 +174,7 @@ If you wish to compare `scQCenrich`’s performance against standard
 metrics, you can write a short benchmarking script. The snippet below
 highlights how one might track which cells are retained across different
 methodologies: complete benchmarking script can be found in
-inst/benchmarking.r
+inst/benchmarking.R
 
 ``` r
 library(scQCenrich)
@@ -205,7 +207,7 @@ retention_df <- data.frame(
 
 Main Features
 
-run_qc_pipeline() – one-liner wrapper for the full QC workflow with
+run_qc_pipeline() - one-liner wrapper for the full QC workflow with
 plots and reports.
 
 Vignettes
