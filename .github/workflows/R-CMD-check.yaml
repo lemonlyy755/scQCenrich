@@ -40,6 +40,21 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Configure OpenSSL for macOS source builds
+        if: runner.os == 'macOS'
+        run: |
+          brew install openssl@3
+          OPENSSL_PREFIX="$(brew --prefix openssl@3)"
+          mkdir -p ~/.R
+          {
+            echo "CPPFLAGS += -I${OPENSSL_PREFIX}/include"
+            echo "LDFLAGS += -L${OPENSSL_PREFIX}/lib"
+          } >> ~/.R/Makevars
+          {
+            echo "PKG_CONFIG_PATH=${OPENSSL_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+            echo "LIBRARY_PATH=${OPENSSL_PREFIX}/lib:${LIBRARY_PATH:-}"
+          } >> "$GITHUB_ENV"
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
