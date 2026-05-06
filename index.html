@@ -60,28 +60,28 @@
 <img src="reference/figures/logo.png" alt="scQCenrich logo" width="500"></p>
 <!-- badges: start -->
 
-<p>scQCenrich is an advanced, annotation-aware quality control framework for single-cell RNA-seq (scRNA-seq) data. It goes beyond simple static thresholds by integrating multi-metric filtering—including standard Seurat metrics and optional spliced/unspliced ratios from droplet data. scQCenrich has the option to automatically handles doublets, performs cell-type auto-annotation, and uniquely emphasizes the rescue of biologically meaningful, cohesive clusters that may otherwise be incorrectly flagged as ‘low quality’ by basic filters.</p>
+<p>scQCenrich is an advanced, annotation-aware quality control framework for single-cell RNA-seq (scRNA-seq) data. It goes beyond simple static thresholds by integrating multi-metric filtering, including standard Seurat metrics and optional spliced/unspliced ratios from droplet data. scQCenrich can automatically handle doublets, perform cell-type auto-annotation, and rescue biologically meaningful, cohesive clusters that may otherwise be incorrectly flagged as “low quality” by basic filters.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>You can install the development version of scQCenrich from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"remotes"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span></span>
 <span>  <span class="st">"lemonlyy755/scQCenrich"</span>,</span>
-<span>  dependencies <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  dependencies <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Depends"</span>, <span class="st">"Imports"</span>, <span class="st">"LinkingTo"</span><span class="op">)</span>,</span>
 <span>  repos <span class="op">=</span> <span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/repositories.html" class="external-link">repositories</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">vignettes</span><span class="op">:</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"knitr"</span>,<span class="st">"rmarkdown"</span><span class="op">)</span><span class="op">)</span>     </span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
-<span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>To install with vignettes:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"knitr"</span>, <span class="st">"rmarkdown"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span></span>
 <span>  <span class="st">"lemonlyy755/scQCenrich"</span>,</span>
-<span>  dependencies   <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  dependencies <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Depends"</span>, <span class="st">"Imports"</span>, <span class="st">"LinkingTo"</span><span class="op">)</span>,</span>
 <span>  build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  repos          <span class="op">=</span> <span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/repositories.html" class="external-link">repositories</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  repos <span class="op">=</span> <span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/repositories.html" class="external-link">repositories</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes</a></span><span class="op">(</span><span class="st">"scQCenrich"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -89,8 +89,8 @@
 <h2 id="example-use">Example use<a class="anchor" aria-label="anchor" href="#example-use"></a>
 </h2>
 <p>This is a basic usage example</p>
-<p>Note: SeuratWrappers does not work in windows os.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>Note: SeuratWrappers does not work on Windows.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lemonlyy755.github.io/scQCenrich/">scQCenrich</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SeuratWrappers</span><span class="op">)</span></span>
@@ -115,7 +115,7 @@
 </h2>
 <p>When you use <code>annot_method = "marker_score"</code>, setting <code>tissue</code> correctly is important for specific PanglaoDB-based cell labels. On PBMC-like immune data, broad or missing tissue selection can blur closely related populations such as monocytes vs dendritic cells or NK cells vs gamma delta T cells.</p>
 <p>If you pass an unrecognised tissue name, <code><a href="reference/run_qc_pipeline.html">run_qc_pipeline()</a></code> warns and annotation falls back to all tissues, which is less specific. Use <code><a href="reference/list_panglao_tissues.html">list_panglao_tissues()</a></code> to see the supported PanglaoDB tissue names:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/list_panglao_tissues.html">list_panglao_tissues</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Examples:</p>
 <ul>
@@ -130,7 +130,7 @@
 </h2>
 <p>This is a basic example to convert velocyto loom file into seurat obj rds to be used in windows OS setting:</p>
 <p>Note: this step cannot be done in windows.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">velocyto.R</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SeuratWrappers</span><span class="op">)</span></span>
@@ -169,7 +169,7 @@
 <h3 id="using-the-toy-dataset">Using the Toy Dataset<a class="anchor" aria-label="anchor" href="#using-the-toy-dataset"></a>
 </h3>
 <p><code>scQCenrich</code> comes bundled with a small PBMC-derived toy dataset (<code>toy_seu</code>) that you can use to immediately test out the pipeline:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lemonlyy755.github.io/scQCenrich/">scQCenrich</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Load the built-in toy Seurat object</span></span>
@@ -191,8 +191,8 @@
 <div class="section level3">
 <h3 id="profiling-scqcenrich-against-other-methods">Profiling scQCenrich Against Other Methods<a class="anchor" aria-label="anchor" href="#profiling-scqcenrich-against-other-methods"></a>
 </h3>
-<p>If you wish to compare <code>scQCenrich</code>’s performance against standard metrics, you can write a short benchmarking script. The snippet below highlights how one might track which cells are retained across different methodologies: complete benchmarking script can be found in inst/benchmarking.r</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>If you wish to compare <code>scQCenrich</code>’s performance against standard metrics, you can write a short benchmarking script. The snippet below highlights how one might track which cells are retained across different methodologies: complete benchmarking script can be found in inst/benchmarking.R</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lemonlyy755.github.io/scQCenrich/">scQCenrich</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
@@ -220,7 +220,7 @@
 <span><span class="op">)</span></span>
 <span><span class="co"># ... grouping and ggplot logic similar to standard analyses</span></span></code></pre></div>
 <p>Main Features</p>
-<p>run_qc_pipeline() – one-liner wrapper for the full QC workflow with plots and reports.</p>
+<p>run_qc_pipeline() - one-liner wrapper for the full QC workflow with plots and reports.</p>
 <p>Vignettes</p>
 <p>See the package vignettes for detailed tutorials</p>
 </div>
