@@ -7,11 +7,13 @@ This vignette runs
 on Seurat objects shipped with the package under `inst/extdata/`.
 
 ``` r
+
 library(scQCenrich)
 library(Seurat)
 ```
 
 ``` r
+
 std_path <- system.file("extdata","seurat_std_small.rds", package="scQCenrich")
 sp_path  <- system.file("extdata","seurat_sp_small.rds", package="scQCenrich")
 stopifnot(nzchar(std_path), file.exists(std_path))
@@ -23,6 +25,7 @@ seurat_sp_small  <- readRDS(sp_path)
 ## Run the pipeline (fast, minimal settings)
 
 ``` r
+
 res <- run_qc_pipeline(
   obj       = seurat_std_small,
   species   = "mouse",
@@ -41,6 +44,7 @@ res <- run_qc_pipeline(
 ### Inspect outputs
 
 ``` r
+
 # Key metadata columns
 head( res$obj@meta.data[, c("auto_celltype","qc_status","is_doublet")], 10)
 

@@ -17,6 +17,7 @@ You can install the development version of scQCenrich from
 [GitHub](https://github.com/) with:
 
 ``` r
+
 install.packages("BiocManager")
 remotes::install_github(
   "lemonlyy755/scQCenrich",
@@ -44,6 +45,7 @@ This is a basic usage example
 Note: SeuratWrappers does not work in windows os.
 
 ``` r
+
 library(scQCenrich)
 library(Seurat)
 library(SeuratWrappers)
@@ -80,6 +82,7 @@ Use
 to see the supported PanglaoDB tissue names:
 
 ``` r
+
 list_panglao_tissues()
 ```
 
@@ -96,6 +99,7 @@ rds to be used in windows OS setting:
 Note: this step cannot be done in windows.
 
 ``` r
+
 library(Seurat)
 library(velocyto.R)
 library(SeuratWrappers)
@@ -138,6 +142,7 @@ saveRDS(bm,"testloom.rds")
 (`toy_seu`) that you can use to immediately test out the pipeline:
 
 ``` r
+
 library(scQCenrich)
 
 # Load the built-in toy Seurat object
@@ -166,6 +171,7 @@ methodologies: complete benchmarking script can be found in
 inst/benchmarking.r
 
 ``` r
+
 library(scQCenrich)
 library(Seurat)
 library(ggplot2)
